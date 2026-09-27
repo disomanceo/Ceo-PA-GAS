@@ -1,0 +1,233 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root{--bg:#fffaf0;--card:#fff;--ink:#3a2a10;--muted:#7c6a49;--line:#e8d8ad;--brand:#c58a14;--brand2:#8c5b00;--ok:#287a48;--danger:#b42318;--soft:#fff4cf}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif;background:linear-gradient(180deg,#fffdf7,#fff8e8);color:var(--ink)}
+    button,input,select,textarea{font:inherit}.app{display:grid;grid-template-columns:265px 1fr;min-height:100vh}
+    aside{background:linear-gradient(180deg,#5f3a00,#8a5a06 48%,#5a3500);color:#fff;padding:18px 16px;position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid #d4a43b}
+    .brand{font-size:1.25rem;font-weight:900;margin-bottom:4px}.version{color:#9eabd0;font-size:.8rem;margin-bottom:22px}
+    .navLabel{font-size:.72rem;letter-spacing:.08em;color:#8fa1cf;margin:18px 10px 8px;text-transform:uppercase}
+    .rankBtn{width:100%;border:0;background:transparent;color:#dfe7ff;padding:12px 13px;border-radius:12px;text-align:left;cursor:pointer;margin:3px 0}
+    .rankBtn small{display:block;color:#8fa1cf;margin-top:3px}.rankBtn.active{background:linear-gradient(135deg,#e1a52a,#b47709);color:#fff;border:1px solid #f5d36e}.rankBtn.active small{color:#fff4cf}
+    .sideInfo{margin-top:24px;padding:12px;border:1px solid #273657;border-radius:12px;color:#afbddf;font-size:.8rem;line-height:1.6}
+    main{padding:24px;max-width:1480px;width:100%;margin:0 auto}.topbar{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}
+    h1,h2,h3,p{margin-top:0}.topbar h1{margin-bottom:5px;font-size:1.6rem}.muted{color:var(--muted)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;background:var(--brand);color:#fff}.btn.secondary{background:#e9eef7;color:#26334e}.btn.green{background:var(--ok)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 8px 30px rgba(24,39,75,.05)}
+    .cardHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}.eyebrow{font-size:.72rem;letter-spacing:.08em;color:var(--brand);font-weight:900}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field label{font-size:.78rem;font-weight:800;color:#44506a;display:block;margin-bottom:5px}
+    .field input,.field select,.field textarea{width:100%;border:1px solid #cfd8e6;border-radius:10px;background:#fff;padding:10px 11px;outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:#6f8fe2;box-shadow:0 0 0 3px #edf2ff}
+    .committeeTabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.committeeTab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-weight:800;cursor:pointer}.committeeTab.active{background:linear-gradient(135deg,#e6b73e,#a66c05);border-color:#a66c05;color:#fff}
+    .sectionTitle{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:18px 0 8px;padding:10px 12px;border-radius:10px;background:var(--soft)}.sectionTitle b:last-child{white-space:nowrap}
+    table{width:100%;border-collapse:collapse}.scoreTable th,.scoreTable td,.pa3Table th,.pa3Table td{border:1px solid #dce3ee;padding:9px;vertical-align:top}.scoreTable th,.pa3Table th{background:#f6f8fc;text-align:center;font-size:.82rem}
+    .criterion{font-size:.76rem;color:var(--muted);line-height:1.45;margin-top:4px}.rating{display:flex;gap:4px;justify-content:center}.rating button{width:34px;height:34px;border-radius:8px;border:1px solid #cfd8e6;background:#fff;cursor:pointer;font-weight:800}.rating button.on{background:linear-gradient(135deg,#f0c54f,#b87908);color:#fff;border-color:#a96b00}
+    .scoreCell{text-align:center;font-weight:900;white-space:nowrap}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.sumBox{background:#f8fafe;border:1px solid var(--line);padding:12px;border-radius:12px}.sumBox span{display:block;font-size:.78rem;color:var(--muted)}.sumBox b{font-size:1.25rem}
+    .resultPass{color:var(--ok)}.resultFail{color:var(--danger)}.status{display:inline-flex;padding:6px 9px;border-radius:999px;background:#edf2ff;color:#3155b7;font-size:.76rem;font-weight:900}
+    .pa3Hero{text-align:center;padding:10px 0 18px}.pa3Hero h2{margin-bottom:4px}.pa3Result{font-size:2rem;font-weight:950}
+    .toast{position:fixed;right:18px;bottom:18px;background:#15203a;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:20}
+    .empty{padding:20px;text-align:center;color:var(--muted)}
+    @media(max-width:980px){.app{grid-template-columns:1fr}aside{position:relative;height:auto}.rankNav{display:flex;gap:8px;overflow:auto}.rankBtn{min-width:190px}.grid{grid-template-columns:1fr 1fr}.topbar{display:block}.actions{margin-top:12px}}
+    @media(max-width:640px){main{padding:12px}.grid,.summary{grid-template-columns:1fr}.card{padding:12px}.scoreTable{font-size:.78rem}.scoreTable th:nth-child(2),.scoreTable td:nth-child(2){display:none}.rating button{width:30px;height:30px}.topbar h1{font-size:1.3rem}}
+    @media print{aside,.topbar,.noPrint,.committeeTabs{display:none!important}.app{display:block}main{padding:0}.card{box-shadow:none;border:0;page-break-inside:avoid}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div style="display:flex;gap:11px;align-items:center;padding:10px;border:1px solid rgba(255,229,156,.35);background:rgba(255,255,255,.08);border-radius:16px">
+      <div style="width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:#f2c65a;color:#5b3a00;border:3px solid #ffe7a1;font-size:1.15rem;font-weight:950">ผอ.</div>
+      <div><b style="display:block;color:#fff7d9">ผอ.สุธน พุทธรัตน์</b><span style="display:block;color:#f4dfaa;font-size:.76rem;line-height:1.35">ผู้อำนวยการโรงเรียนวัดไผ่มุ้ง</span></div>
+    </div>
+    <div class="brand">ระบบ PA Online</div>
+    <div class="version">Google Apps Script · v0.2.0</div>
+    <div class="navLabel">เลือกวิทยฐานะ</div>
+    <div class="rankNav" id="rankNav"></div>
+    <div class="sideInfo">โครงคะแนน PA 2/ส<br>ส่วนที่ 1 = 60 คะแนน<br>ส่วนที่ 2 = 40 คะแนน<br><b>รวม 100 คะแนน</b><br><br>PA3 สรุปกรรมการ 3 คนอัตโนมัติ</div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div><div class="eyebrow">PA 2/ส → PA 3/ส</div><h1>ระบบประเมินการพัฒนางานตามข้อตกลง (PA)</h1><div class="muted" id="levelText">กำลังโหลด...</div></div>
+      <div class="actions noPrint"><button class="btn secondary" onclick="resetForm()">เริ่มรายการใหม่</button><button class="btn secondary" onclick="window.print()">พิมพ์หน้า</button><button class="btn" onclick="exportPa3Pdf()">สร้าง PA3 PDF และบันทึก Drive</button><button class="btn green" onclick="saveData()">บันทึกลง Sheet</button></div>
+    </div>
+
+    <section class="card">
+      <div class="cardHead"><div><div class="eyebrow">ข้อมูลผู้รับการประเมิน</div><h2>ข้อมูลครู</h2></div><span class="status" id="rankBadge">-</span></div>
+      <div class="grid">
+        <div class="field"><label>ปีงบประมาณ พ.ศ.</label><input id="fiscalYear"></div><div class="field"><label>วันที่เริ่มรอบประเมิน</label><input id="startDate" type="date"></div><div class="field"><label>วันที่สิ้นสุดรอบประเมิน</label><input id="endDate" type="date"></div><div class="field"><label>วันที่ประเมิน</label><input id="evaluationDate" type="date"></div>
+        <div class="field"><label>ชื่อ-นามสกุล</label><input id="teacherName" placeholder="ชื่อผู้รับการประเมิน"></div>
+        <div class="field"><label>ตำแหน่ง</label><input id="position" value="ครู"></div>
+        <div class="field"><label>วิทยฐานะ</label><input id="academicRank" readonly></div>
+        <div class="field"><label>สถานศึกษา</label><input id="school"></div>
+        <div class="field"><label>สังกัด</label><input id="affiliation"></div>
+        <div class="field"><label>อันดับเงินเดือน</label><input id="salaryRank" placeholder="เช่น คศ.2"></div>
+        <div class="field"><label>อัตราเงินเดือน</label><input id="salaryAmount" inputmode="decimal"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="cardHead"><div><div class="eyebrow">กรรมการผู้ประเมิน</div><h2>ลงคะแนน PA 2/ส</h2><div class="muted">กรรมการแต่ละคนให้คะแนนครบทุกข้อ ระบบคิดคะแนนและผลผ่าน/ไม่ผ่านให้ทันที</div></div><span class="status" id="committeeStatus">กรรมการคนที่ 1</span></div>
+      <div class="committeeTabs noPrint" id="committeeTabs"></div>
+      <div class="grid" style="margin-bottom:12px">
+        <div class="field"><label>ชื่อกรรมการ</label><input id="committeeName" oninput="syncCommitteeMeta()"></div>
+        <div class="field"><label>ตำแหน่งกรรมการ</label><input id="committeePosition" oninput="syncCommitteeMeta()"></div>
+        <div class="field"><label>หน้าที่กรรมการ</label><input id="committeeRole" oninput="syncCommitteeMeta()"></div><div class="field"><label>หมายเหตุ/ข้อเสนอแนะ</label><input id="committeeNote" oninput="syncCommitteeMeta()"></div>
+      </div>
+      <div id="scoreArea"></div>
+      <div class="summary">
+        <div class="sumBox"><span>ส่วนที่ 1</span><b id="sumPart1">0.00 / 60</b></div>
+        <div class="sumBox"><span>ส่วนที่ 2</span><b id="sumPart2">0.00 / 40</b></div>
+        <div class="sumBox"><span>รวม</span><b id="sumTotal">0.00 / 100</b></div>
+        <div class="sumBox"><span>ผลกรรมการคนนี้</span><b id="sumResult">ยังไม่ครบ</b></div>
+      </div>
+    </section>
+
+    <section class="card" id="pa3Card">
+      <div class="pa3Hero"><div class="eyebrow">PA 3/ส</div><h2>สรุปผลการประเมินจากกรรมการ 3 คน</h2><div class="muted">เกณฑ์ผ่าน: กรรมการแต่ละคนให้คะแนนรวมไม่น้อยกว่า 70 คะแนน</div></div>
+      <table class="pa3Table">
+        <thead><tr><th>กรรมการ</th><th>ชื่อผู้ประเมิน</th><th>ส่วนที่ 1 / 60</th><th>ส่วนที่ 2 / 40</th><th>รวม / 100</th><th>ผล</th></tr></thead>
+        <tbody id="pa3Body"></tbody>
+      </table>
+      <div class="summary">
+        <div class="sumBox"><span>กรรมการส่งครบ</span><b id="pa3Complete">0 / 3</b></div>
+        <div class="sumBox"><span>คะแนนเฉลี่ย</span><b id="pa3Average">0.00 / 100</b></div>
+        <div class="sumBox" style="grid-column:span 2"><span>สรุปผล PA3</span><b class="pa3Result" id="pa3Result">ยังไม่ครบ</b></div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const PART1=[
+['1.1','สร้างและหรือพัฒนาหลักสูตร','ด้านการจัดการเรียนรู้'],
+['1.2','ออกแบบการจัดการเรียนรู้','ด้านการจัดการเรียนรู้'],
+['1.3','จัดกิจกรรมการเรียนรู้','ด้านการจัดการเรียนรู้'],
+['1.4','สร้างและหรือพัฒนาสื่อ นวัตกรรม เทคโนโลยี และแหล่งเรียนรู้','ด้านการจัดการเรียนรู้'],
+['1.5','วัดและประเมินผลการเรียนรู้','ด้านการจัดการเรียนรู้'],
+['1.6','ศึกษา วิเคราะห์ และสังเคราะห์ เพื่อแก้ไขปัญหาหรือพัฒนาการเรียนรู้','ด้านการจัดการเรียนรู้'],
+['1.7','จัดบรรยากาศที่ส่งเสริมและพัฒนาผู้เรียน','ด้านการจัดการเรียนรู้'],
+['1.8','อบรมและพัฒนาคุณลักษณะที่ดีของผู้เรียน','ด้านการจัดการเรียนรู้'],
+['2.1','จัดทำข้อมูลสารสนเทศของผู้เรียนและรายวิชา','ด้านการส่งเสริมและสนับสนุน'],
+['2.2','ดำเนินการตามระบบดูแลช่วยเหลือผู้เรียน','ด้านการส่งเสริมและสนับสนุน'],
+['2.3','ปฏิบัติงานวิชาการ และงานอื่น ๆ ของสถานศึกษา','ด้านการส่งเสริมและสนับสนุน'],
+['2.4','ประสานความร่วมมือกับผู้ปกครอง ภาคีเครือข่าย และหรือสถานประกอบการ','ด้านการส่งเสริมและสนับสนุน'],
+['3.1','พัฒนาตนเองอย่างเป็นระบบและต่อเนื่อง','ด้านการพัฒนาตนเองและวิชาชีพ'],
+['3.2','มีส่วนร่วมในการแลกเปลี่ยนเรียนรู้ทางวิชาชีพ','ด้านการพัฒนาตนเองและวิชาชีพ'],
+['3.3','นำความรู้ ความสามารถ ทักษะจากการพัฒนาตนเองและวิชาชีพมาใช้','ด้านการพัฒนาตนเองและวิชาชีพ']
+];
+const PART2=[
+['p2-method','1','วิธีดำเนินการ','พิจารณาความถูกต้อง ครบถ้วน เป็นไปตามระยะเวลาที่กำหนด และสะท้อนระดับการปฏิบัติที่คาดหวัง',20],
+['p2-quant','2.1','ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง — เชิงปริมาณ','พิจารณาการบรรลุเป้าหมายเชิงปริมาณตามข้อตกลง ความถูกต้อง และความน่าเชื่อถือ',10],
+['p2-qual','2.2','ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง — เชิงคุณภาพ','พิจารณาการบรรลุเป้าหมายเชิงคุณภาพ และผลที่ปรากฏต่อคุณภาพผู้เรียน',10]
+];
+const RANKS={
+'teacher-none':{label:'ไม่มีวิทยฐานะ',full:'ครู ไม่มีวิทยฐานะ',level:'ปรับประยุกต์ (Apply & Adapt)'},
+'teacher-skilled':{label:'ชำนาญการ',full:'ครูชำนาญการ',level:'แก้ไขปัญหา (Solve the Problem)'},
+'teacher-senior-skilled':{label:'ชำนาญการพิเศษ',full:'ครูชำนาญการพิเศษ',level:'ริเริ่ม พัฒนา (Originate & Improve)'},
+'teacher-expert':{label:'เชี่ยวชาญ',full:'ครูเชี่ยวชาญ',level:'คิดค้น ปรับเปลี่ยน (Invent & Transform)'}
+};
+let state={recordId:'',templateKey:'teacher-none',committeeIndex:0,committees:[newCommittee('ประธานกรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน')]};
+
+function newCommittee(role){return{name:'',position:'',committeeRole:role||'กรรมการผู้ประเมิน',note:'',scores:{},itemScores:{},part1:0,part2:0,total:0,complete:false}}
+function boot(){
+  renderRanks(); renderCommitteeTabs(); selectRank('teacher-none');
+  google.script.run.withSuccessHandler(d=>{document.getElementById('fiscalYear').value=d.fiscalYear||''}).getBootstrap();
+}
+function renderRanks(){
+  rankNav.innerHTML=Object.entries(RANKS).map(([k,r])=>`<button class="rankBtn" data-key="${k}" onclick="selectRank('${k}')"><b>${r.full}</b><small>${r.level}</small></button>`).join('');
+}
+function selectRank(key){
+  state.templateKey=key;document.querySelectorAll('.rankBtn').forEach(b=>b.classList.toggle('active',b.dataset.key===key));
+  const r=RANKS[key]; rankBadge.textContent=r.full;academicRank.value=r.label==='ไม่มีวิทยฐานะ'?'':r.label;levelText.textContent='ระดับการปฏิบัติที่คาดหวัง: '+r.level;
+  renderScores(); updateAll();
+}
+function renderCommitteeTabs(){
+ committeeTabs.innerHTML=state.committees.map((c,i)=>`<button class="committeeTab ${i===state.committeeIndex?'active':''}" onclick="selectCommittee(${i})">กรรมการคนที่ ${i+1}<span>${c.complete?' ✓':''}</span></button>`).join('');
+}
+function selectCommittee(i){syncCommitteeMeta();state.committeeIndex=i;renderCommitteeTabs();committeeStatus.textContent='กรรมการคนที่ '+(i+1);loadCommitteeMeta();renderScores();updateAll()}
+function loadCommitteeMeta(){const c=state.committees[state.committeeIndex];committeeName.value=c.name;committeePosition.value=c.position;committeeRole.value=c.committeeRole||'';committeeNote.value=c.note}
+function syncCommitteeMeta(){const c=state.committees[state.committeeIndex];c.name=committeeName.value;c.position=committeePosition.value;c.committeeRole=committeeRole.value;c.note=committeeNote.value}
+function criterionText(){
+ const r=RANKS[state.templateKey];
+ return 'ประเมินตามมาตรฐานตำแหน่งและระดับการปฏิบัติที่คาดหวัง: '+r.level;
+}
+function renderScores(){
+ const c=state.committees[state.committeeIndex];
+ let html=`<div class="sectionTitle"><b>ส่วนที่ 1 ข้อตกลงในการพัฒนางานตามมาตรฐานตำแหน่ง</b><b>60 คะแนน</b></div>
+ <table class="scoreTable"><thead><tr><th style="width:58%">รายการประเมิน</th><th>ระดับที่คาดหวัง</th><th>ระดับ 1–4</th><th>คะแนน</th></tr></thead><tbody>`;
+ let last='';
+ PART1.forEach((it,idx)=>{const id='p1-'+it[0];if(last!==it[2]){html+=`<tr><td colspan="4"><b>${it[2]}</b></td></tr>`;last=it[2]}
+ html+=rowHtml(id,it[0],it[1],criterionText(),4,c.scores[id],4)});
+ html+=`</tbody></table><div class="sectionTitle"><b>ส่วนที่ 2 ประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน</b><b>40 คะแนน</b></div>
+ <table class="scoreTable"><thead><tr><th style="width:58%">รายการประเมิน</th><th>รายละเอียด</th><th>ระดับ 1–4</th><th>คะแนน</th></tr></thead><tbody>`;
+ PART2.forEach(it=>html+=rowHtml(it[0],it[1],it[2],it[3],it[4],c.scores[it[0]],4));
+ html+='</tbody></table>';scoreArea.innerHTML=html;
+}
+function rowHtml(id,code,title,detail,maxScore,rating,ratingMax){
+ const buttons=[1,2,3,4].map(n=>`<button class="${Number(rating)===n?'on':''}" onclick="rate('${id}',${n},${maxScore},${ratingMax})">${n}</button>`).join('');
+ const score=rating?(rating/ratingMax*maxScore):0;
+ return `<tr><td><b>${code} ${title}</b><div class="criterion">${detail}</div></td><td><span class="muted">${RANKS[state.templateKey].level}</span></td><td><div class="rating">${buttons}</div></td><td class="scoreCell">${score.toFixed(2)} / ${maxScore}</td></tr>`;
+}
+function rate(id,rating,maxScore,ratingMax){
+ const c=state.committees[state.committeeIndex];c.scores[id]=rating;c.itemScores[id]=rating/ratingMax*maxScore;renderScores();updateAll()
+}
+function calculate(c){
+ c.part1=PART1.reduce((s,it)=>s+Number(c.itemScores['p1-'+it[0]]||0),0);
+ c.part2=PART2.reduce((s,it)=>s+Number(c.itemScores[it[0]]||0),0);
+ c.total=c.part1+c.part2;
+ const required=PART1.length+PART2.length;c.complete=Object.keys(c.scores).length===required;
+}
+function updateAll(){
+ state.committees.forEach(c=>calculate(c));const c=state.committees[state.committeeIndex];
+ sumPart1.textContent=c.part1.toFixed(2)+' / 60';sumPart2.textContent=c.part2.toFixed(2)+' / 40';sumTotal.textContent=c.total.toFixed(2)+' / 100';
+ sumResult.textContent=!c.complete?'ยังไม่ครบ':c.total>=70?'ผ่านเกณฑ์':'ไม่ผ่านเกณฑ์';sumResult.className=c.complete?(c.total>=70?'resultPass':'resultFail'):'';
+ renderCommitteeTabs();renderPa3();
+}
+function renderPa3(){
+ pa3Body.innerHTML=state.committees.map((c,i)=>`<tr><td style="text-align:center"><b>คนที่ ${i+1}</b></td><td>${c.name||'-'}</td><td class="scoreCell">${c.part1.toFixed(2)}</td><td class="scoreCell">${c.part2.toFixed(2)}</td><td class="scoreCell">${c.total.toFixed(2)}</td><td class="scoreCell ${c.complete?(c.total>=70?'resultPass':'resultFail'):''}">${!c.complete?'-':c.total>=70?'ผ่าน':'ไม่ผ่าน'}</td></tr>`).join('');
+ const complete=state.committees.filter(c=>c.complete).length;const avg=complete?state.committees.filter(c=>c.complete).reduce((s,c)=>s+c.total,0)/complete:0;
+ const passed=complete===3?state.committees.every(c=>c.total>=70):null;pa3Complete.textContent=complete+' / 3';pa3Average.textContent=avg.toFixed(2)+' / 100';
+ pa3Result.textContent=passed===null?'ยังไม่ครบ':passed?'ผ่านเกณฑ์':'ไม่ผ่านเกณฑ์';pa3Result.className='pa3Result '+(passed===null?'':passed?'resultPass':'resultFail');
+}
+function payload(){
+ syncCommitteeMeta();state.committees.forEach(c=>calculate(c));const complete=state.committees.filter(c=>c.complete);const avg=complete.length?complete.reduce((s,c)=>s+c.total,0)/complete.length:0;const passed=complete.length===3?state.committees.every(c=>c.total>=70):null;
+ return{recordId:state.recordId,fiscalYear:fiscalYear.value,startDate:startDate.value,endDate:endDate.value,evaluationDate:evaluationDate.value,templateKey:state.templateKey,status:complete.length===3?'COMPLETED':'DRAFT',teacher:{fullName:teacherName.value,position:position.value,academicRank:academicRank.value,school:school.value,affiliation:affiliation.value,salaryRank:salaryRank.value,salaryAmount:salaryAmount.value},committees:state.committees,summary:{average:avg,passed}};
+}
+function saveData(){
+ const p=payload();if(!p.teacher.fullName.trim()){showToast('กรุณากรอกชื่อผู้รับการประเมิน');return}
+ const btn=document.querySelector('.btn.green');btn.disabled=true;btn.textContent='กำลังบันทึก...';
+ google.script.run.withSuccessHandler(r=>{state.recordId=r.recordId;showToast('บันทึกข้อมูลเรียบร้อย');btn.disabled=false;btn.textContent='บันทึกลง Sheet'})
+ .withFailureHandler(e=>{showToast('บันทึกไม่สำเร็จ: '+e.message);btn.disabled=false;btn.textContent='บันทึกลง Sheet'}).saveEvaluation(p);
+}
+function exportPa3Pdf(){
+ const p=payload();
+ if(!p.teacher.fullName.trim()){showToast('กรุณากรอกชื่อผู้รับการประเมิน');return}
+ if(!p.committees.every(c=>c.complete)){showToast('กรุณาให้กรรมการทั้ง 3 คนลงคะแนนให้ครบ');return}
+ const buttons=document.querySelectorAll('.btn');
+ let btn=null;buttons.forEach(b=>{if(b.textContent.indexOf('สร้าง PA3 PDF')>=0)btn=b});
+ if(btn){btn.disabled=true;btn.textContent='กำลังสร้าง PDF...'}
+ google.script.run.withSuccessHandler(r=>{
+   state.recordId=r.recordId||state.recordId;
+   showToast('สร้าง PA3 PDF และบันทึกใน Drive เรียบร้อย');
+   if(btn){btn.disabled=false;btn.textContent='สร้าง PA3 PDF และบันทึก Drive'}
+   if(r.url) window.open(r.url,'_blank');
+ }).withFailureHandler(e=>{
+   showToast('สร้าง PDF ไม่สำเร็จ: '+e.message);
+   if(btn){btn.disabled=false;btn.textContent='สร้าง PA3 PDF และบันทึก Drive'}
+ }).exportPa3Pdf(p);
+}
+function resetForm(){
+ if(!confirm('เริ่มรายการใหม่และล้างคะแนนบนหน้าจอ?'))return;
+ state={recordId:'',templateKey:state.templateKey,committeeIndex:0,committees:[newCommittee('ประธานกรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน')]};
+ ['teacherName','school','affiliation','salaryRank','salaryAmount','startDate','endDate','evaluationDate'].forEach(id=>document.getElementById(id).value='');loadCommitteeMeta();renderCommitteeTabs();renderScores();updateAll()
+}
+function showToast(msg){toast.textContent=msg;toast.style.display='block';setTimeout(()=>toast.style.display='none',2800)}
+boot();
+</script>
+</body>
+</html>

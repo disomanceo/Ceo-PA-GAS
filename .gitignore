@@ -1,0 +1,16 @@
+﻿# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary files
+*.log
+*.tmp
+*.bak
+__check_*
+
+# Local auth / environment
+.env
+.env.*
+.clasprc.json
