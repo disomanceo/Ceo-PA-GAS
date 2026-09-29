@@ -240,14 +240,31 @@ function saveData(){
 function exportBlankPa3Pdf(){
  const p=payload();p.blankForm=true;
  const buttons=document.querySelectorAll('.btn');let btn=null;buttons.forEach(b=>{if(b.textContent.indexOf('แบบฟอร์มเปล่า')>=0)btn=b});
+
+ // เปิดแท็บรอไว้ทันทีจากการคลิก เพื่อไม่ให้ browser popup blocker ปิดกั้น
+ const previewWin=window.open('about:blank','_blank');
+ if(previewWin){
+   try{
+     previewWin.document.open();
+     previewWin.document.write('<!doctype html><html lang="th"><head><meta charset="utf-8"><title>กำลังสร้างแบบฟอร์ม PA3</title><style>body{font-family:Sarabun,Arial,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0;background:#fffaf0;color:#6d4700}.box{text-align:center;padding:32px}.spin{width:40px;height:40px;border:4px solid #f2dfb3;border-top-color:#c88a12;border-radius:50%;margin:0 auto 16px;animation:s 1s linear infinite}@keyframes s{to{transform:rotate(360deg)}}</style></head><body><div class="box"><div class="spin"></div><b>กำลังสร้างแบบฟอร์มเปล่า...</b><div>สร้างเสร็จแล้วจะแสดง PDF ในหน้านี้อัตโนมัติ</div></div></body></html>');
+     previewWin.document.close();
+   }catch(_){}
+ }
+
  if(btn){btn.disabled=true;btn.textContent='กำลังสร้างแบบฟอร์ม...'}
  google.script.run.withSuccessHandler(r=>{
    showToast('สร้างแบบฟอร์มเปล่าเรียบร้อย');
    if(btn){btn.disabled=false;btn.textContent='แบบฟอร์มเปล่า'}
-   if(r.url) window.open(r.url,'_blank');
+   if(r.url){
+     if(previewWin && !previewWin.closed) previewWin.location.replace(r.url);
+     else window.open(r.url,'_blank');
+   }else if(previewWin && !previewWin.closed){
+     previewWin.close();
+   }
  }).withFailureHandler(e=>{
    showToast('สร้างแบบฟอร์มไม่สำเร็จ: '+e.message);
    if(btn){btn.disabled=false;btn.textContent='แบบฟอร์มเปล่า'}
+   if(previewWin && !previewWin.closed) previewWin.close();
  }).exportPa3Pdf(p);
 }
 function exportPa3Pdf(){
