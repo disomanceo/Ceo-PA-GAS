@@ -11,8 +11,7 @@
     aside{background:linear-gradient(180deg,#5f3a00,#8a5a06 48%,#5a3500);color:#fff;padding:18px 16px;position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid #d4a43b}
     .brand{font-size:1.25rem;font-weight:900;margin-bottom:4px}.version{color:#9eabd0;font-size:.8rem;margin-bottom:22px}
     .navLabel{font-size:.72rem;letter-spacing:.08em;color:#8fa1cf;margin:18px 10px 8px;text-transform:uppercase}
-    .rankBtn{width:100%;border:0;background:transparent;color:#dfe7ff;padding:12px 13px;border-radius:12px;text-align:left;cursor:pointer;margin:3px 0}
-    .rankBtn small{display:block;color:#8fa1cf;margin-top:3px}.rankBtn.active{background:linear-gradient(135deg,#e1a52a,#b47709);color:#fff;border:1px solid #f5d36e}.rankBtn.active small{color:#fff4cf}
+    .selectorGroup{padding:11px;border-radius:16px;margin-top:14px;border:1px solid rgba(255,255,255,.25)}.selectorHead{display:flex;align-items:center;gap:9px;margin-bottom:8px}.selectorStep{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;font-weight:950;background:#fff}.selectorHead b{display:block;font-size:.9rem}.selectorHead small{display:block;font-size:.7rem;margin-top:1px;opacity:.82}.positionGroup{background:rgba(44,169,213,.12);border-color:#49b9df}.positionGroup .selectorStep{color:#126782}.rankGroup{background:rgba(245,190,64,.11);border-color:#e5bd55}.rankGroup .selectorStep{color:#8a5a06}.selectorConnector{text-align:center;color:#f4dfa5;font-size:.72rem;padding:7px 2px 0}.selectorConnector b{display:block;font-size:1.1rem;line-height:1}.rankBtn{width:100%;border:1px solid transparent;background:transparent;color:#dfe7ff;padding:11px 12px;border-radius:11px;text-align:left;cursor:pointer;margin:3px 0}.rankBtn small{display:block;color:#b9c5e2;margin-top:3px}.positionChoice.active{background:linear-gradient(135deg,#21a7d2,#116d91);color:#fff;border-color:#79d8f3;box-shadow:0 0 0 2px rgba(121,216,243,.15)}.positionChoice.active small{color:#dff7ff}.rankChoice.active{background:linear-gradient(135deg,#e1a52a,#b47709);color:#fff;border-color:#f5d36e;box-shadow:0 0 0 2px rgba(245,211,110,.14)}.rankChoice.active small{color:#fff4cf}
     .sideInfo{margin-top:24px;padding:12px;border:1px solid #273657;border-radius:12px;color:#afbddf;font-size:.8rem;line-height:1.6}
     main{padding:24px;max-width:1480px;width:100%;margin:0 auto}.topbar{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}
     h1,h2,h3,p{margin-top:0}.topbar h1{margin-bottom:5px;font-size:1.6rem}.muted{color:var(--muted)}
@@ -44,10 +43,9 @@
     </div>
     <div class="brand">ระบบ PA Online</div>
     <div class="version">Google Apps Script · v0.2.0</div>
-    <div class="navLabel">เลือกตำแหน่ง</div>
-    <div class="rankNav" id="positionNav"></div>
-    <div class="navLabel">เลือกวิทยฐานะ</div>
-    <div class="rankNav" id="rankNav"></div>
+    <div class="selectorGroup positionGroup"><div class="selectorHead"><span class="selectorStep">1</span><div><b>เลือกตำแหน่ง</b><small>เลือกสายตำแหน่งก่อน</small></div></div><div class="rankNav" id="positionNav"></div></div>
+    <div class="selectorConnector"><b>↓</b>เชื่อมไปยังวิทยฐานะของตำแหน่งที่เลือก</div>
+    <div class="selectorGroup rankGroup"><div class="selectorHead"><span class="selectorStep">2</span><div><b>เลือกวิทยฐานะ</b><small id="rankForPosition">สำหรับตำแหน่งครู</small></div></div><div class="rankNav" id="rankNav"></div></div>
     <div class="sideInfo" id="sideInfo">โครงคะแนน PA 2/ส<br>ส่วนที่ 1 = 60 คะแนน<br>ส่วนที่ 2 = 40 คะแนน<br><b>รวม 100 คะแนน</b><br><br>PA 3/ส สรุปกรรมการ 3 คนอัตโนมัติ</div>
   </aside>
 
@@ -164,14 +162,14 @@ function boot(){
   renderPositions(); renderRanks(); renderCommitteeTabs(); selectPosition('teacher'); selectRank('teacher-none');
   google.script.run.withSuccessHandler(d=>{document.getElementById('fiscalYear').value=d.fiscalYear||''}).getBootstrap();
 }
-function renderPositions(){positionNav.innerHTML=Object.entries(POSITIONS).map(function(e){var k=e[0],p=e[1];return '<button class="rankBtn '+(k===state.positionKey?'active':'')+'" data-position="'+k+'" onclick="selectPosition(\''+k+'\')"><b>'+p.label+'</b><small>'+p.form2+'</small></button>';}).join('');}
-function selectPosition(key){state.positionKey=key;state.templateKey=key+':'+state.rankKey;position.value=POSITIONS[key].label;document.querySelectorAll('[data-position]').forEach(function(b){b.classList.toggle('active',b.dataset.position===key)});formCode.textContent=POSITIONS[key].form2+' → '+POSITIONS[key].form3;pa3Code.textContent=POSITIONS[key].form3;scoreFormTitle.textContent='ลงคะแนน '+POSITIONS[key].form2;sideInfo.innerHTML='โครงคะแนน '+POSITIONS[key].form2+'<br>ส่วนที่ 1 = 60 คะแนน<br>ส่วนที่ 2 = 40 คะแนน<br><b>รวม 100 คะแนน</b><br><br>'+POSITIONS[key].form3+' สรุปกรรมการ 3 คนอัตโนมัติ';renderRanks();selectRank(state.rankKey);}
+function renderPositions(){positionNav.innerHTML=Object.entries(POSITIONS).map(function(e){var k=e[0],p=e[1];return '<button class="rankBtn positionChoice '+(k===state.positionKey?'active':'')+'" data-position="'+k+'" onclick="selectPosition(\''+k+'\')"><b>'+p.label+'</b><small>'+p.form2+'</small></button>';}).join('');}
+function selectPosition(key){state.positionKey=key;state.templateKey=key+':'+state.rankKey;position.value=POSITIONS[key].label;document.querySelectorAll('[data-position]').forEach(function(b){b.classList.toggle('active',b.dataset.position===key)});rankForPosition.textContent='สำหรับ '+POSITIONS[key].label;formCode.textContent=POSITIONS[key].form2+' → '+POSITIONS[key].form3;pa3Code.textContent=POSITIONS[key].form3;scoreFormTitle.textContent='ลงคะแนน '+POSITIONS[key].form2;sideInfo.innerHTML='โครงคะแนน '+POSITIONS[key].form2+'<br>ส่วนที่ 1 = 60 คะแนน<br>ส่วนที่ 2 = 40 คะแนน<br><b>รวม 100 คะแนน</b><br><br>'+POSITIONS[key].form3+' สรุปกรรมการ 3 คนอัตโนมัติ';renderRanks();selectRank(state.rankKey);}
 function activePart1(){return state.positionKey==='teacher'?TEACHER_PART1:ADMIN_PART1}
 function activePart2(){return state.positionKey==='teacher'?TEACHER_PART2:ADMIN_PART2}
 function part2Title(){return state.positionKey==='teacher'?'ประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน':'ประเด็นท้าทายในการพัฒนาคุณภาพผู้เรียน ครู และสถานศึกษา'}
 function rankDisplayName(r){const prefix=POSITIONS[state.positionKey].rankPrefix;return r.label==='ไม่มีวิทยฐานะ'?prefix+' (ไม่มีวิทยฐานะ)':prefix+r.label}
 function renderRanks(){
-  rankNav.innerHTML=Object.entries(RANKS).map(([k,r])=>`<button class="rankBtn" data-key="${k}" onclick="selectRank('${k}')"><b>${rankDisplayName(r)}</b><small>${r.level} · ${r.en}</small></button>`).join('');
+  rankNav.innerHTML=Object.entries(RANKS).map(([k,r])=>`<button class="rankBtn rankChoice" data-key="${k}" onclick="selectRank('${k}')"><b>${rankDisplayName(r)}</b><small>${r.level} · ${r.en}</small></button>`).join('');
 }
 function selectRank(key){
   state.rankKey=key;state.templateKey=state.positionKey+':'+key;document.querySelectorAll('[data-key]').forEach(b=>b.classList.toggle('active',b.dataset.key===key));

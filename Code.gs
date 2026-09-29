@@ -109,16 +109,17 @@ function exportPa3Pdf(payload) {
   try {
     body.setPageWidth(595.28);
     body.setPageHeight(841.89);
-    body.setMarginTop(28);
-    body.setMarginBottom(28);
-    body.setMarginLeft(28);
-    body.setMarginRight(28);
+    body.setMarginTop(30);
+    body.setMarginBottom(30);
+    body.setMarginLeft(36);
+    body.setMarginRight(36);
 
     const isAdmin = /ผู้อำนวยการ/.test(String(payload.teacher?.position || ''));
     appendTopCode_(body, isAdmin ? 'PA 3/บส' : 'PA 3/ส');
     appendCentered_(body, 'แบบสรุปผลการประเมินการพัฒนางานตามข้อตกลง (PA)', 12, true);
     appendCentered_(body, 'สำหรับข้าราชการครูและบุคลากรทางการศึกษา', 12, true);
-    appendCentered_(body, 'ตำแหน่ง ' + (payload.teacher.position || 'ครู') + academicRankPdf_(payload.teacher.academicRank), 12, true);
+    const fullRank = fullAcademicRankPdf_(payload.teacher.position || 'ครู', payload.teacher.academicRank);
+    appendCentered_(body, 'ตำแหน่ง ' + (payload.teacher.position || 'ครู') + ' วิทยฐานะ ' + fullRank, 12, true);
     appendCentered_(body, 'ประจำปีงบประมาณ พ.ศ. ' + (payload.fiscalYear || ''), 12, true);
 
     const period = 'ระหว่างวันที่ ' + thaiDate_(payload.startDate) + ' ถึงวันที่ ' + thaiDate_(payload.endDate);
@@ -129,7 +130,7 @@ function exportPa3Pdf(payload) {
     appendText_(body,
       'ชื่อ ' + (payload.teacher.fullName || '') +
       '   ตำแหน่ง ' + (payload.teacher.position || 'ครู') +
-      '   วิทยฐานะ ' + (payload.teacher.academicRank || 'ไม่มีวิทยฐานะ'), 10, false);
+      '   วิทยฐานะ ' + fullRank, 10, false);
     appendText_(body,
       'สถานศึกษา ' + (payload.teacher.school || '') +
       (payload.teacher.affiliation ? '   สังกัด ' + payload.teacher.affiliation : ''), 10, false);
@@ -163,7 +164,7 @@ function exportPa3Pdf(payload) {
     body.appendParagraph('');
     body.appendParagraph('');
 
-    const evaluationDate = thaiDate_(payload.evaluationDate);
+    const evaluationDate = thaiSignatureDate_(payload.evaluationDate);
     appendSignatureBlock_(body, c[0], true, evaluationDate);
 
     body.appendParagraph('');
@@ -327,9 +328,21 @@ function buildPdfFileName_(payload) {
   return 'PA3_' + (payload.fiscalYear || '') + '_' + safe;
 }
 
-function academicRankPdf_(rank) {
-  const v = String(rank || '').trim();
-  return ' วิทยฐานะ ' + (v || 'ไม่มีวิทยฐานะ');
+function fullAcademicRankPdf_(position, rank) {
+  const r = String(rank || '').trim();
+  if (!r) return 'ไม่มีวิทยฐานะ';
+  const p = String(position || '').trim();
+  if (p.indexOf('รองผู้อำนวยการ') >= 0) return 'รองผู้อำนวยการ' + r;
+  if (p.indexOf('ผู้อำนวยการ') >= 0) return 'ผู้อำนวยการ' + r;
+  return 'ครู' + r;
+}
+
+function thaiSignatureDate_(value) {
+  if (!value) return '................................';
+  const d = new Date(value + 'T00:00:00+07:00');
+  if (isNaN(d.getTime())) return String(value);
+  const months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  return d.getDate() + ' เดือน ' + months[d.getMonth()] + ' พ.ศ. ' + (d.getFullYear() + 543);
 }
 
 function formatScore_(value) {
@@ -369,7 +382,7 @@ function appendText_(body, text, size, bold) {
 
 function stylePa3Table_(table) {
   table.setBorderWidth(1);
-  const widths = [205,50,45,45,45,105];
+  const widths = [199,63,42,42,42,135];
   for (let r = 0; r < table.getNumRows(); r++) {
     const row = table.getRow(r);
     for (let c = 0; c < row.getNumCells(); c++) {
@@ -379,6 +392,7 @@ function stylePa3Table_(table) {
       const text = cell.editAsText();
       text.setFontFamily('Sarabun').setFontSize(9);
       if (r === 0 || r === 3) text.setBold(true);
+      if ([0,1,2,3].includes(r)) { try { row.setMinimumHeight([34,48,66,24][r]); } catch (e) {} }
       const p = cell.getChild(0).asParagraph();
       if (c >= 1 && c <= 4) p.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
     }
