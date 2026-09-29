@@ -48,7 +48,7 @@
     <div class="rankNav" id="positionNav"></div>
     <div class="navLabel">เลือกวิทยฐานะ</div>
     <div class="rankNav" id="rankNav"></div>
-    <div class="sideInfo">โครงคะแนน PA 2/ส<br>ส่วนที่ 1 = 60 คะแนน<br>ส่วนที่ 2 = 40 คะแนน<br><b>รวม 100 คะแนน</b><br><br>PA3 สรุปกรรมการ 3 คนอัตโนมัติ</div>
+    <div class="sideInfo" id="sideInfo">โครงคะแนน PA 2/ส<br>ส่วนที่ 1 = 60 คะแนน<br>ส่วนที่ 2 = 40 คะแนน<br><b>รวม 100 คะแนน</b><br><br>PA 3/ส สรุปกรรมการ 3 คนอัตโนมัติ</div>
   </aside>
 
   <main>
@@ -58,7 +58,7 @@
     </div>
 
     <section class="card">
-      <div class="cardHead"><div><div class="eyebrow">ข้อมูลผู้รับการประเมิน</div><h2>ข้อมูลครู</h2></div><span class="status" id="rankBadge">-</span></div>
+      <div class="cardHead"><div><div class="eyebrow">ข้อมูลผู้รับการประเมิน</div><h2>ข้อมูลผู้รับการประเมิน</h2></div><span class="status" id="rankBadge">-</span></div>
       <div class="grid">
         <div class="field"><label>ปีงบประมาณ พ.ศ.</label><input id="fiscalYear"></div><div class="field"><label>วันที่เริ่มรอบประเมิน</label><input id="startDate" type="date"></div><div class="field"><label>วันที่สิ้นสุดรอบประเมิน</label><input id="endDate" type="date"></div><div class="field"><label>วันที่ประเมิน</label><input id="evaluationDate" type="date"></div>
         <div class="field"><label>ชื่อ-นามสกุล</label><input id="teacherName" placeholder="ชื่อผู้รับการประเมิน"></div>
@@ -72,7 +72,7 @@
     </section>
 
     <section class="card">
-      <div class="cardHead"><div><div class="eyebrow">กรรมการผู้ประเมิน</div><h2>ลงคะแนน PA 2/ส</h2><div class="muted">กรรมการแต่ละคนให้คะแนนครบทุกข้อ ระบบคิดคะแนนและผลผ่าน/ไม่ผ่านให้ทันที</div></div><span class="status" id="committeeStatus">กรรมการคนที่ 1</span></div>
+      <div class="cardHead"><div><div class="eyebrow">กรรมการผู้ประเมิน</div><h2 id="scoreFormTitle">ลงคะแนน PA 2/ส</h2><div class="muted">กรรมการแต่ละคนให้คะแนนครบทุกข้อ ระบบคิดคะแนนและผลผ่าน/ไม่ผ่านให้ทันที</div></div><span class="status" id="committeeStatus">กรรมการคนที่ 1</span></div>
       <div class="committeeTabs noPrint" id="committeeTabs"></div>
       <div class="grid" style="margin-bottom:12px">
         <div class="field"><label>ชื่อกรรมการ</label><input id="committeeName" oninput="syncCommitteeMeta()"></div>
@@ -164,16 +164,16 @@ function boot(){
   google.script.run.withSuccessHandler(d=>{document.getElementById('fiscalYear').value=d.fiscalYear||''}).getBootstrap();
 }
 function renderPositions(){positionNav.innerHTML=Object.entries(POSITIONS).map(function(e){var k=e[0],p=e[1];return '<button class="rankBtn '+(k===state.positionKey?'active':'')+'" data-position="'+k+'" onclick="selectPosition(\''+k+'\')"><b>'+p.label+'</b><small>'+p.form2+'</small></button>';}).join('');}
-function selectPosition(key){state.positionKey=key;state.templateKey=key+':'+state.rankKey;position.value=POSITIONS[key].label;document.querySelectorAll('[data-position]').forEach(function(b){b.classList.toggle('active',b.dataset.position===key)});formCode.textContent=POSITIONS[key].form2+' → '+POSITIONS[key].form3;pa3Code.textContent=POSITIONS[key].form3;renderScores();updateAll();}
+function selectPosition(key){state.positionKey=key;state.templateKey=key+':'+state.rankKey;position.value=POSITIONS[key].label;document.querySelectorAll('[data-position]').forEach(function(b){b.classList.toggle('active',b.dataset.position===key)});formCode.textContent=POSITIONS[key].form2+' → '+POSITIONS[key].form3;pa3Code.textContent=POSITIONS[key].form3;scoreFormTitle.textContent='ลงคะแนน '+POSITIONS[key].form2;sideInfo.innerHTML='โครงคะแนน '+POSITIONS[key].form2+'<br>ส่วนที่ 1 = 60 คะแนน<br>ส่วนที่ 2 = 40 คะแนน<br><b>รวม 100 คะแนน</b><br><br>'+POSITIONS[key].form3+' สรุปกรรมการ 3 คนอัตโนมัติ';selectRank(state.rankKey);}
 function activePart1(){return state.positionKey==='teacher'?TEACHER_PART1:ADMIN_PART1}
 function activePart2(){return state.positionKey==='teacher'?TEACHER_PART2:ADMIN_PART2}
 function part2Title(){return state.positionKey==='teacher'?'ประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน':'ประเด็นท้าทายในการพัฒนาคุณภาพผู้เรียน ครู และสถานศึกษา'}
 function renderRanks(){
-  rankNav.innerHTML=Object.entries(RANKS).map(([k,r])=>`<button class="rankBtn" data-key="${k}" onclick="selectRank('${k}')"><b>${r.full}</b><small>${r.level} · ${r.en}</small></button>`).join('');
+  rankNav.innerHTML=Object.entries(RANKS).map(([k,r])=>`<button class="rankBtn" data-key="${k}" onclick="selectRank('${k}')"><b>${r.label}</b><small>${r.level} · ${r.en}</small></button>`).join('');
 }
 function selectRank(key){
   state.rankKey=key;state.templateKey=state.positionKey+':'+key;document.querySelectorAll('[data-key]').forEach(b=>b.classList.toggle('active',b.dataset.key===key));
-  const r=RANKS[key]; rankBadge.textContent=r.full;academicRank.value=r.label==='ไม่มีวิทยฐานะ'?'':r.label;levelText.textContent='ระดับการปฏิบัติที่คาดหวัง: '+r.level+' ('+r.en+')';
+  const r=RANKS[key]; rankBadge.textContent=POSITIONS[state.positionKey].label+' · '+r.label;academicRank.value=r.label==='ไม่มีวิทยฐานะ'?'':r.label;levelText.textContent='ระดับการปฏิบัติที่คาดหวัง: '+r.level+' ('+r.en+')';
   renderScores(); updateAll();
 }
 function renderCommitteeTabs(){
@@ -183,7 +183,7 @@ function selectCommittee(i){syncCommitteeMeta();state.committeeIndex=i;renderCom
 function loadCommitteeMeta(){const c=state.committees[state.committeeIndex];committeeName.value=c.name;committeePosition.value=c.position;committeeRole.value=c.committeeRole||'';committeeNote.value=c.note}
 function syncCommitteeMeta(){const c=state.committees[state.committeeIndex];c.name=committeeName.value;c.position=committeePosition.value;c.committeeRole=committeeRole.value;c.note=committeeNote.value}
 function criterionText(){
- const r=RANKS[state.templateKey];
+ const r=RANKS[state.rankKey];
  return 'ประเมินตามมาตรฐานตำแหน่งและระดับการปฏิบัติที่คาดหวัง: '+r.level;
 }
 function renderScores(){
@@ -202,7 +202,7 @@ function renderScores(){
 function rowHtml(id,code,title,detail,maxScore,rating,ratingMax){
  const buttons=[1,2,3,4].map(n=>`<button class="${Number(rating)===n?'on':''}" onclick="rate('${id}',${n},${maxScore},${ratingMax})">${n}</button>`).join('');
  const score=rating?(rating/ratingMax*maxScore):0;
- return `<tr><td><b>${code} ${title}</b><div class="criterion">${detail}</div></td><td><span class="muted">${RANKS[state.templateKey].level}</span></td><td><div class="rating">${buttons}</div></td><td class="scoreCell">${fmtScore(score)} / ${maxScore}</td></tr>`;
+ return `<tr><td><b>${code} ${title}</b><div class="criterion">${detail}</div></td><td><span class="muted">${RANKS[state.rankKey].level}</span></td><td><div class="rating">${buttons}</div></td><td class="scoreCell">${fmtScore(score)} / ${maxScore}</td></tr>`;
 }
 function rate(id,rating,maxScore,ratingMax){
  const c=state.committees[state.committeeIndex];c.scores[id]=rating;c.itemScores[id]=rating/ratingMax*maxScore;renderScores();updateAll()
