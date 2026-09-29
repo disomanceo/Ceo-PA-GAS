@@ -168,6 +168,7 @@ function exportPa3Pdf(payload) {
       (fail ? '☑' : '☐') + ' ไม่ผ่านเกณฑ์', 12, true);
 
     appendSpacer_(body);
+    appendSignatureGap_(body, 2);
 
     const evaluationDate = blankForm ? '................................' : thaiSignatureDate_(payload.evaluationDate);
     appendSignatureBlock_(body, c[0], true, evaluationDate);
@@ -380,6 +381,16 @@ function appendSpacer_(body) {
   return p;
 }
 
+function appendSignatureGap_(body, lines) {
+  const count = Number(lines || 0);
+  for (let i = 0; i < count; i++) {
+    const p = body.appendParagraph('');
+    p.setSpacingBefore(0).setSpacingAfter(0);
+    try { p.setLineSpacing(0.75); } catch (e) {}
+    p.editAsText().setFontFamily('Sarabun').setFontSize(16);
+  }
+}
+
 function appendTopCode_(body, text) {
   const p = body.appendParagraph(text);
   p.setAlignment(DocumentApp.HorizontalAlignment.RIGHT);
@@ -408,7 +419,7 @@ function appendText_(body, text, size, bold) {
 
 function stylePa3Table_(table) {
   table.setBorderWidth(1);
-  const widths = [230,58,45,45,45,136];
+  const widths = [265,50,38,38,38,130];
   for (let r = 0; r < table.getNumRows(); r++) {
     const row = table.getRow(r);
     for (let c = 0; c < row.getNumCells(); c++) {
@@ -422,7 +433,7 @@ function stylePa3Table_(table) {
       const p = cell.getChild(0).asParagraph();
       p.setSpacingBefore(0).setSpacingAfter(0);
       try { p.setLineSpacing(0.82); } catch (e) {}
-      if (c >= 1 && c <= 4) p.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+      if (r === 0 || (c >= 1 && c <= 4)) p.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
     }
   }
 }
