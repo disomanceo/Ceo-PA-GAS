@@ -2,7 +2,7 @@ const CONFIG = {
   SHEET_ID: '1q-y4CmaJW5lRzldfpLIm3yGT2HACYJSSu8dim59RLDs',
   FOLDER_ID: '1_8W_-1Tl4JGdKnaK_gDB814Ux0bt_Gia',
   APP_NAME: 'ระบบการประเมิน PA Online',
-  VERSION: '0.2.0',
+  VERSION: '0.3.0',
   DEVELOPER: 'ผอ.สุธน พุทธรัตน์',
   DEVELOPER_POSITION: 'ผู้อำนวยการโรงเรียนวัดไผ่มุ้ง'
 };
@@ -94,15 +94,17 @@ function saveEvaluation(payload) {
 }
 
 function exportPa3Pdf(payload) {
-  validatePayload_(payload);
-  if (!payload.committees.every(c => c.complete)) {
-    throw new Error('กรุณาให้คะแนนกรรมการทั้ง 3 คนให้ครบก่อนสร้าง PA3 PDF');
+  const blankForm = payload?.blankForm === true;
+  if (!blankForm) {
+    validatePayload_(payload);
+    if (!payload.committees.every(c => c.complete)) {
+      throw new Error('กรุณาให้คะแนนกรรมการทั้ง 3 คนให้ครบก่อนสร้าง PA3 PDF');
+    }
+    const saved = saveEvaluation(payload);
+    payload.recordId = saved.recordId;
   }
 
-  const saved = saveEvaluation(payload);
-  payload.recordId = saved.recordId;
-
-  const fileName = buildPdfFileName_(payload);
+  const fileName = blankForm ? buildBlankPdfFileName_(payload) : buildPdfFileName_(payload);
   const doc = DocumentApp.create('TMP_' + fileName);
   const body = doc.getBody();
 
@@ -128,34 +130,38 @@ function exportPa3Pdf(payload) {
     body.appendParagraph('');
     appendText_(body, 'ข้อมูลผู้รับการประเมิน', 10, true);
     appendText_(body,
-      'ชื่อ ' + (payload.teacher.fullName || '') +
+      'ชื่อ ' + (blankForm ? '........................................................' : (payload.teacher.fullName || '')) +
       '   ตำแหน่ง ' + (payload.teacher.position || 'ครู') +
       '   วิทยฐานะ ' + fullRank, 10, false);
     appendText_(body,
-      'สถานศึกษา ' + (payload.teacher.school || '') +
-      (payload.teacher.affiliation ? '   สังกัด ' + payload.teacher.affiliation : ''), 10, false);
+      'สถานศึกษา ' + (blankForm ? '........................................................' : (payload.teacher.school || '')) +
+      (blankForm ? '   สังกัด ........................................................' : (payload.teacher.affiliation ? '   สังกัด ' + payload.teacher.affiliation : '')), 10, false);
     appendText_(body,
-      'รับเงินเดือนอันดับ ' + (payload.teacher.salaryRank || '-') +
-      '   อัตราเงินเดือน ' + (payload.teacher.salaryAmount || '-') + ' บาท', 10, false);
+      'รับเงินเดือนอันดับ ' + (blankForm ? '........' : (payload.teacher.salaryRank || '-')) +
+      '   อัตราเงินเดือน ' + (blankForm ? '.................' : (payload.teacher.salaryAmount || '-')) + ' บาท', 10, false);
 
     body.appendParagraph('');
     appendText_(body, 'ผลการประเมิน', 10, true);
 
-    const c = payload.committees;
+    const c = blankForm ? [
+      {name:'',position:'',committeeRole:'ประธานกรรมการผู้ประเมิน',part1:'',part2:'',total:''},
+      {name:'',position:'',committeeRole:'กรรมการผู้ประเมิน',part1:'',part2:'',total:''},
+      {name:'',position:'',committeeRole:'กรรมการผู้ประเมิน',part1:'',part2:'',total:''}
+    ] : payload.committees;
     const resultTable = body.appendTable([
       ['การประเมินข้อตกลง\nในการพัฒนางาน', 'คะแนน\nเต็ม', 'คนที่ 1', 'คนที่ 2', 'คนที่ 3', 'หมายเหตุ'],
       ['ส่วนที่ 1 ข้อตกลงในการพัฒนางานตามมาตรฐานตำแหน่ง', '60',
-        formatScore_(c[0].part1), formatScore_(c[1].part1), formatScore_(c[2].part1),
+        blankForm ? '' : formatScore_(c[0].part1), blankForm ? '' : formatScore_(c[1].part1), blankForm ? '' : formatScore_(c[2].part1),
         'เกณฑ์ผ่านต้องได้คะแนน\nจากกรรมการแต่ละคน\nไม่ต่ำกว่าร้อยละ 70%'],
       [(isAdmin ? 'ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาคุณภาพผู้เรียน ครู และสถานศึกษา' : 'ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน'), '40',
-        formatScore_(c[0].part2), formatScore_(c[1].part2), formatScore_(c[2].part2), ''],
-      ['รวม', '100', formatScore_(c[0].total), formatScore_(c[1].total), formatScore_(c[2].total), '']
+        blankForm ? '' : formatScore_(c[0].part2), blankForm ? '' : formatScore_(c[1].part2), blankForm ? '' : formatScore_(c[2].part2), ''],
+      ['รวม', '100', blankForm ? '' : formatScore_(c[0].total), blankForm ? '' : formatScore_(c[1].total), blankForm ? '' : formatScore_(c[2].total), '']
     ]);
     stylePa3Table_(resultTable);
 
     body.appendParagraph('');
-    const pass = payload.summary?.passed === true;
-    const fail = payload.summary?.passed === false;
+    const pass = !blankForm && payload.summary?.passed === true;
+    const fail = !blankForm && payload.summary?.passed === false;
     appendCentered_(body,
       'สรุปผลการประเมินทั้ง 2 ส่วน จากกรรมการ 3 คน   ' +
       (pass ? '☑' : '☐') + ' ผ่านเกณฑ์   ' +
@@ -164,7 +170,7 @@ function exportPa3Pdf(payload) {
     body.appendParagraph('');
     body.appendParagraph('');
 
-    const evaluationDate = thaiSignatureDate_(payload.evaluationDate);
+    const evaluationDate = blankForm ? '................................' : thaiSignatureDate_(payload.evaluationDate);
     appendSignatureBlock_(body, c[0], true, evaluationDate);
 
     body.appendParagraph('');
@@ -185,16 +191,18 @@ function exportPa3Pdf(payload) {
       console.log('PDF sharing unchanged: ' + sharingError.message);
     }
 
-    const log = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName('PA3_PDF');
-    log.appendRow([
-      payload.recordId,
-      payload.fiscalYear || '',
-      payload.teacher.fullName || '',
-      pdfFile.getId(),
-      pdfFile.getUrl(),
-      pdfFile.getName(),
-      new Date()
-    ]);
+    if (!blankForm) {
+      const log = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName('PA3_PDF');
+      log.appendRow([
+        payload.recordId,
+        payload.fiscalYear || '',
+        payload.teacher.fullName || '',
+        pdfFile.getId(),
+        pdfFile.getUrl(),
+        pdfFile.getName(),
+        new Date()
+      ]);
+    }
 
     return {
       ok: true,
@@ -326,6 +334,12 @@ function getTemplates_() {
 function buildPdfFileName_(payload) {
   const safe = String(payload.teacher.fullName || 'PA3').replace(/[\\/:*?"<>|]/g, '_');
   return 'PA3_' + (payload.fiscalYear || '') + '_' + safe;
+}
+
+function buildBlankPdfFileName_(payload) {
+  const pos = String(payload?.teacher?.position || 'ครู').replace(/[\\/:*?"<>|]/g, '_');
+  const rank = fullAcademicRankPdf_(payload?.teacher?.position || 'ครู', payload?.teacher?.academicRank).replace(/[\\/:*?"<>|]/g, '_');
+  return 'PA3_แบบฟอร์มเปล่า_' + pos + '_' + rank;
 }
 
 function fullAcademicRankPdf_(position, rank) {
