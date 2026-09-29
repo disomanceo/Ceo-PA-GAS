@@ -111,37 +111,37 @@ function exportPa3Pdf(payload) {
   try {
     body.setPageWidth(595.28);
     body.setPageHeight(841.89);
-    body.setMarginTop(30);
-    body.setMarginBottom(30);
-    body.setMarginLeft(36);
-    body.setMarginRight(36);
+    body.setMarginTop(14);
+    body.setMarginBottom(14);
+    body.setMarginLeft(18);
+    body.setMarginRight(18);
 
     const isAdmin = /ผู้อำนวยการ/.test(String(payload.teacher?.position || ''));
     appendTopCode_(body, isAdmin ? 'PA 3/บส' : 'PA 3/ส');
-    appendCentered_(body, 'แบบสรุปผลการประเมินการพัฒนางานตามข้อตกลง (PA)', 12, true);
-    appendCentered_(body, 'สำหรับข้าราชการครูและบุคลากรทางการศึกษา', 12, true);
+    appendCentered_(body, 'แบบสรุปผลการประเมินการพัฒนางานตามข้อตกลง (PA)', 16, true);
+    appendCentered_(body, 'สำหรับข้าราชการครูและบุคลากรทางการศึกษา', 16, true);
     const fullRank = fullAcademicRankPdf_(payload.teacher.position || 'ครู', payload.teacher.academicRank);
-    appendCentered_(body, 'ตำแหน่ง ' + (payload.teacher.position || 'ครู') + ' วิทยฐานะ ' + fullRank, 12, true);
-    appendCentered_(body, 'ประจำปีงบประมาณ พ.ศ. ' + (payload.fiscalYear || ''), 12, true);
+    appendCentered_(body, 'ตำแหน่ง ' + (payload.teacher.position || 'ครู') + ' วิทยฐานะ ' + fullRank, 16, true);
+    appendCentered_(body, 'ประจำปีงบประมาณ พ.ศ. ' + (payload.fiscalYear || ''), 16, true);
 
     const period = 'ระหว่างวันที่ ' + thaiDate_(payload.startDate) + ' ถึงวันที่ ' + thaiDate_(payload.endDate);
-    appendCentered_(body, '(' + period + ')', 10, false);
+    appendCentered_(body, '(' + period + ')', 16, false);
 
-    body.appendParagraph('');
-    appendText_(body, 'ข้อมูลผู้รับการประเมิน', 10, true);
+    appendSpacer_(body);
+    appendText_(body, 'ข้อมูลผู้รับการประเมิน', 16, true);
     appendText_(body,
       'ชื่อ ' + (blankForm ? '........................................................' : (payload.teacher.fullName || '')) +
       '   ตำแหน่ง ' + (payload.teacher.position || 'ครู') +
-      '   วิทยฐานะ ' + fullRank, 10, false);
+      '   วิทยฐานะ ' + fullRank, 12, false);
     appendText_(body,
       'สถานศึกษา ' + (blankForm ? '........................................................' : (payload.teacher.school || '')) +
-      (blankForm ? '   สังกัด ........................................................' : (payload.teacher.affiliation ? '   สังกัด ' + payload.teacher.affiliation : '')), 10, false);
+      (blankForm ? '   สังกัด ........................................................' : (payload.teacher.affiliation ? '   สังกัด ' + payload.teacher.affiliation : '')), 12, false);
     appendText_(body,
       'รับเงินเดือนอันดับ ' + (blankForm ? '........' : (payload.teacher.salaryRank || '-')) +
-      '   อัตราเงินเดือน ' + (blankForm ? '.................' : (payload.teacher.salaryAmount || '-')) + ' บาท', 10, false);
+      '   อัตราเงินเดือน ' + (blankForm ? '.................' : (payload.teacher.salaryAmount || '-')) + ' บาท', 12, false);
 
-    body.appendParagraph('');
-    appendText_(body, 'ผลการประเมิน', 10, true);
+    appendSpacer_(body);
+    appendText_(body, 'ผลการประเมิน', 16, true);
 
     const c = blankForm ? [
       {name:'',position:'',committeeRole:'ประธานกรรมการผู้ประเมิน',part1:'',part2:'',total:''},
@@ -159,21 +159,20 @@ function exportPa3Pdf(payload) {
     ]);
     stylePa3Table_(resultTable);
 
-    body.appendParagraph('');
+    appendSpacer_(body);
     const pass = !blankForm && payload.summary?.passed === true;
     const fail = !blankForm && payload.summary?.passed === false;
     appendCentered_(body,
       'สรุปผลการประเมินทั้ง 2 ส่วน จากกรรมการ 3 คน   ' +
       (pass ? '☑' : '☐') + ' ผ่านเกณฑ์   ' +
-      (fail ? '☑' : '☐') + ' ไม่ผ่านเกณฑ์', 10, true);
+      (fail ? '☑' : '☐') + ' ไม่ผ่านเกณฑ์', 12, true);
 
-    body.appendParagraph('');
-    body.appendParagraph('');
+    appendSpacer_(body);
 
     const evaluationDate = blankForm ? '................................' : thaiSignatureDate_(payload.evaluationDate);
     appendSignatureBlock_(body, c[0], true, evaluationDate);
 
-    body.appendParagraph('');
+    appendSpacer_(body);
     const signTable = body.appendTable([['', '']]);
     signTable.setBorderWidth(0);
     appendSignatureCell_(signTable.getCell(0,0), c[1], evaluationDate);
@@ -373,30 +372,43 @@ function thaiDate_(value) {
   return d.getDate() + ' ' + months[d.getMonth()] + ' ' + (d.getFullYear() + 543);
 }
 
+function appendSpacer_(body) {
+  const p = body.appendParagraph('');
+  p.setSpacingBefore(0).setSpacingAfter(0);
+  try { p.setLineSpacing(0.1); } catch (e) {}
+  p.editAsText().setFontFamily('Sarabun').setFontSize(1);
+  return p;
+}
+
 function appendTopCode_(body, text) {
   const p = body.appendParagraph(text);
   p.setAlignment(DocumentApp.HorizontalAlignment.RIGHT);
-  p.editAsText().setFontFamily('Sarabun').setFontSize(10).setBold(true);
+  p.setSpacingAfter(0);
+  p.setSpacingBefore(0).setSpacingAfter(0);
+  try { p.setLineSpacing(0.85); } catch (e) {}
+  p.editAsText().setFontFamily('Sarabun').setFontSize(16).setBold(true);
 }
 
 function appendCentered_(body, text, size, bold) {
   const p = body.appendParagraph(text);
   p.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-  p.setSpacingAfter(0);
-  p.editAsText().setFontFamily('Sarabun').setFontSize(size).setBold(!!bold);
+  p.setSpacingBefore(0).setSpacingAfter(0);
+  try { p.setLineSpacing(0.85); } catch (e) {}
+  p.editAsText().setFontFamily('Sarabun').setFontSize(16).setBold(!!bold);
   return p;
 }
 
 function appendText_(body, text, size, bold) {
   const p = body.appendParagraph(text);
-  p.setSpacingAfter(0);
-  p.editAsText().setFontFamily('Sarabun').setFontSize(size).setBold(!!bold);
+  p.setSpacingBefore(0).setSpacingAfter(0);
+  try { p.setLineSpacing(0.85); } catch (e) {}
+  p.editAsText().setFontFamily('Sarabun').setFontSize(16).setBold(!!bold);
   return p;
 }
 
 function stylePa3Table_(table) {
   table.setBorderWidth(1);
-  const widths = [199,63,42,42,42,135];
+  const widths = [230,58,45,45,45,136];
   for (let r = 0; r < table.getNumRows(); r++) {
     const row = table.getRow(r);
     for (let c = 0; c < row.getNumCells(); c++) {
@@ -404,10 +416,12 @@ function stylePa3Table_(table) {
       try { cell.setWidth(widths[c]); } catch (e) {}
       cell.setVerticalAlignment(DocumentApp.VerticalAlignment.CENTER);
       const text = cell.editAsText();
-      text.setFontFamily('Sarabun').setFontSize(9);
+      text.setFontFamily('Sarabun').setFontSize(16);
       if (r === 0 || r === 3) text.setBold(true);
-      if ([0,1,2,3].includes(r)) { try { row.setMinimumHeight([34,48,66,24][r]); } catch (e) {} }
+      if ([0,1,2,3].includes(r)) { try { row.setMinimumHeight([32,52,70,26][r]); } catch (e) {} }
       const p = cell.getChild(0).asParagraph();
+      p.setSpacingBefore(0).setSpacingAfter(0);
+      try { p.setLineSpacing(0.82); } catch (e) {}
       if (c >= 1 && c <= 4) p.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
     }
   }
@@ -425,8 +439,9 @@ function appendSignatureBlock_(body, committee, centered, evaluationDate) {
   lines.forEach((line,i) => {
     const p = body.appendParagraph(line);
     p.setAlignment(centered ? DocumentApp.HorizontalAlignment.CENTER : DocumentApp.HorizontalAlignment.LEFT);
-    p.setSpacingAfter(0);
-    p.editAsText().setFontFamily('Sarabun').setFontSize(9).setBold(i === 1);
+    p.setSpacingBefore(0).setSpacingAfter(0);
+    try { p.setLineSpacing(0.82); } catch (e) {}
+    p.editAsText().setFontFamily('Sarabun').setFontSize(16).setBold(i === 1);
   });
 }
 
@@ -443,7 +458,8 @@ function appendSignatureCell_(cell, committee, evaluationDate) {
   lines.forEach((line,i) => {
     const p = cell.appendParagraph(line);
     p.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-    p.setSpacingAfter(0);
-    p.editAsText().setFontFamily('Sarabun').setFontSize(9).setBold(i === 1);
+    p.setSpacingBefore(0).setSpacingAfter(0);
+    try { p.setLineSpacing(0.82); } catch (e) {}
+    p.editAsText().setFontFamily('Sarabun').setFontSize(16).setBold(i === 1);
   });
 }
