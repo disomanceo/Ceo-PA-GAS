@@ -44,6 +44,8 @@
     </div>
     <div class="brand">ระบบ PA Online</div>
     <div class="version">Google Apps Script · v0.2.0</div>
+    <div class="navLabel">เลือกตำแหน่ง</div>
+    <div class="rankNav" id="positionNav"></div>
     <div class="navLabel">เลือกวิทยฐานะ</div>
     <div class="rankNav" id="rankNav"></div>
     <div class="sideInfo">โครงคะแนน PA 2/ส<br>ส่วนที่ 1 = 60 คะแนน<br>ส่วนที่ 2 = 40 คะแนน<br><b>รวม 100 คะแนน</b><br><br>PA3 สรุปกรรมการ 3 คนอัตโนมัติ</div>
@@ -51,7 +53,7 @@
 
   <main>
     <div class="topbar">
-      <div><div class="eyebrow">PA 2/ส → PA 3/ส</div><h1>ระบบประเมินการพัฒนางานตามข้อตกลง (PA)</h1><div class="muted" id="levelText">กำลังโหลด...</div></div>
+      <div><div class="eyebrow" id="formCode">PA 2/ส → PA 3/ส</div><h1>ระบบประเมินการพัฒนางานตามข้อตกลง (PA)</h1><div class="muted" id="levelText">กำลังโหลด...</div></div>
       <div class="actions noPrint"><button class="btn secondary" onclick="resetForm()">เริ่มรายการใหม่</button><button class="btn secondary" onclick="window.print()">พิมพ์หน้า</button><button class="btn" onclick="exportPa3Pdf()">สร้าง PA3 PDF และบันทึก Drive</button><button class="btn green" onclick="saveData()">บันทึกลง Sheet</button></div>
     </div>
 
@@ -60,7 +62,7 @@
       <div class="grid">
         <div class="field"><label>ปีงบประมาณ พ.ศ.</label><input id="fiscalYear"></div><div class="field"><label>วันที่เริ่มรอบประเมิน</label><input id="startDate" type="date"></div><div class="field"><label>วันที่สิ้นสุดรอบประเมิน</label><input id="endDate" type="date"></div><div class="field"><label>วันที่ประเมิน</label><input id="evaluationDate" type="date"></div>
         <div class="field"><label>ชื่อ-นามสกุล</label><input id="teacherName" placeholder="ชื่อผู้รับการประเมิน"></div>
-        <div class="field"><label>ตำแหน่ง</label><input id="position" value="ครู"></div>
+        <div class="field"><label>ตำแหน่ง</label><input id="position" value="ครู" readonly></div>
         <div class="field"><label>วิทยฐานะ</label><input id="academicRank" readonly></div>
         <div class="field"><label>สถานศึกษา</label><input id="school"></div>
         <div class="field"><label>สังกัด</label><input id="affiliation"></div>
@@ -87,7 +89,7 @@
     </section>
 
     <section class="card" id="pa3Card">
-      <div class="pa3Hero"><div class="eyebrow">PA 3/ส</div><h2>สรุปผลการประเมินจากกรรมการ 3 คน</h2><div class="muted">เกณฑ์ผ่าน: กรรมการแต่ละคนให้คะแนนรวมไม่น้อยกว่า 70 คะแนน</div></div>
+      <div class="pa3Hero"><div class="eyebrow" id="pa3Code">PA 3/ส</div><h2>สรุปผลการประเมินจากกรรมการ 3 คน</h2><div class="muted">เกณฑ์ผ่าน: กรรมการแต่ละคนให้คะแนนรวมไม่น้อยกว่า 70 คะแนน</div></div>
       <table class="pa3Table">
         <thead><tr><th>กรรมการ</th><th>ชื่อผู้ประเมิน</th><th>ส่วนที่ 1 / 60</th><th>ส่วนที่ 2 / 40</th><th>รวม / 100</th><th>ผล</th></tr></thead>
         <tbody id="pa3Body"></tbody>
@@ -103,7 +105,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const PART1=[
+const TEACHER_PART1=[
 ['1.1','สร้างและหรือพัฒนาหลักสูตร','ด้านการจัดการเรียนรู้'],
 ['1.2','ออกแบบการจัดการเรียนรู้','ด้านการจัดการเรียนรู้'],
 ['1.3','จัดกิจกรรมการเรียนรู้','ด้านการจัดการเรียนรู้'],
@@ -120,29 +122,57 @@ const PART1=[
 ['3.2','มีส่วนร่วมในการแลกเปลี่ยนเรียนรู้ทางวิชาชีพ','ด้านการพัฒนาตนเองและวิชาชีพ'],
 ['3.3','นำความรู้ ความสามารถ ทักษะจากการพัฒนาตนเองและวิชาชีพมาใช้','ด้านการพัฒนาตนเองและวิชาชีพ']
 ];
-const PART2=[
+const ADMIN_PART1=[
+['1.1','การวางแผนพัฒนามาตรฐานการเรียนรู้ของผู้เรียน','ด้านการบริหารวิชาการและความเป็นผู้นำทางวิชาการ'],
+['1.2','การจัดทำและพัฒนาหลักสูตรสถานศึกษา','ด้านการบริหารวิชาการและความเป็นผู้นำทางวิชาการ'],
+['1.3','การพัฒนากระบวนการจัดการเรียนรู้ที่เน้นผู้เรียนเป็นสำคัญ','ด้านการบริหารวิชาการและความเป็นผู้นำทางวิชาการ'],
+['1.4','การส่งเสริม สนับสนุนการพัฒนาหรือการนำสื่อ นวัตกรรมและเทคโนโลยีทางการศึกษามาประยุกต์ใช้','ด้านการบริหารวิชาการและความเป็นผู้นำทางวิชาการ'],
+['1.5','การนิเทศ กำกับ ติดตาม ประเมินผลการจัดการเรียนรู้ของครู และระบบประกันคุณภาพภายในสถานศึกษา','ด้านการบริหารวิชาการและความเป็นผู้นำทางวิชาการ'],
+['1.6','การศึกษา วิเคราะห์ เพื่อแก้ปัญหาและพัฒนาการจัดการเรียนรู้เพื่อยกระดับคุณภาพการศึกษา','ด้านการบริหารวิชาการและความเป็นผู้นำทางวิชาการ'],
+['2.1','การบริหารจัดการสถานศึกษาให้เป็นไปตามกฎ ระเบียบ ข้อบังคับ นโยบาย และหลักบริหารจัดการที่ดี','ด้านการบริหารจัดการสถานศึกษา'],
+['2.2','การบริหารกิจการผู้เรียนและการส่งเสริมพัฒนาผู้เรียน','ด้านการบริหารจัดการสถานศึกษา'],
+['2.3','การจัดระบบดูแลช่วยเหลือนักเรียน','ด้านการบริหารจัดการสถานศึกษา'],
+['3.1','การกำหนดนโยบาย กลยุทธ์ การใช้เครื่องมือหรือนวัตกรรมทางการบริหาร','ด้านการบริหารการเปลี่ยนแปลงเชิงกลยุทธ์และนวัตกรรม'],
+['3.2','การบริหารการเปลี่ยนแปลงและนวัตกรรมในสถานศึกษา','ด้านการบริหารการเปลี่ยนแปลงเชิงกลยุทธ์และนวัตกรรม'],
+['4.1','การสร้างและพัฒนาเครือข่ายพัฒนาการเรียนรู้','ด้านการบริหารงานชุมชนและเครือข่าย'],
+['4.2','การจัดระบบการให้บริการในสถานศึกษา','ด้านการบริหารงานชุมชนและเครือข่าย'],
+['5.1','การพัฒนาตนเองและวิชาชีพ','ด้านการพัฒนาตนเองและวิชาชีพ'],
+['5.2','การนำความรู้และทักษะจากการพัฒนาตนเองและวิชาชีพมาใช้พัฒนาการบริหารจัดการสถานศึกษา','ด้านการพัฒนาตนเองและวิชาชีพ']
+];
+const TEACHER_PART2=[
 ['p2-method','1','วิธีดำเนินการ','พิจารณาความถูกต้อง ครบถ้วน เป็นไปตามระยะเวลาที่กำหนด และสะท้อนระดับการปฏิบัติที่คาดหวัง',20],
 ['p2-quant','2.1','ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง — เชิงปริมาณ','พิจารณาการบรรลุเป้าหมายเชิงปริมาณตามข้อตกลง ความถูกต้อง และความน่าเชื่อถือ',10],
 ['p2-qual','2.2','ผลลัพธ์การเรียนรู้ของผู้เรียนที่คาดหวัง — เชิงคุณภาพ','พิจารณาการบรรลุเป้าหมายเชิงคุณภาพ และผลที่ปรากฏต่อคุณภาพผู้เรียน',10]
 ];
+const ADMIN_PART2=[
+['p2-method','1','วิธีดำเนินการ','พิจารณาความถูกต้อง ครบถ้วน เป็นไปตามระยะเวลาที่กำหนด และสะท้อนระดับการปฏิบัติที่คาดหวัง',20],
+['p2-quant','2.1','ผลลัพธ์ที่คาดหวัง — เชิงปริมาณ','พิจารณาการบรรลุเป้าหมายเชิงปริมาณที่เกิดกับผู้เรียน ครู และสถานศึกษา',10],
+['p2-qual','2.2','ผลลัพธ์ที่คาดหวัง — เชิงคุณภาพ','พิจารณาการบรรลุเป้าหมายเชิงคุณภาพที่เกิดกับผู้เรียน ครู และสถานศึกษา',10]
+];
+const POSITIONS={teacher:{label:'ครู',form2:'PA 2/ส',form3:'PA 3/ส'},deputy:{label:'รองผู้อำนวยการสถานศึกษา',form2:'PA 2/บส',form3:'PA 3/บส'},director:{label:'ผู้อำนวยการสถานศึกษา',form2:'PA 2/บส',form3:'PA 3/บส'}};
 const RANKS={
 'teacher-none':{label:'ไม่มีวิทยฐานะ',full:'ครู ไม่มีวิทยฐานะ',level:'ปรับประยุกต์',en:'Apply & Adapt'},
 'teacher-skilled':{label:'ชำนาญการ',full:'ครูชำนาญการ',level:'แก้ไขปัญหา',en:'Solve the Problem'},
 'teacher-senior-skilled':{label:'ชำนาญการพิเศษ',full:'ครูชำนาญการพิเศษ',level:'ริเริ่ม พัฒนา',en:'Originate & Improve'},
 'teacher-expert':{label:'เชี่ยวชาญ',full:'ครูเชี่ยวชาญ',level:'คิดค้น ปรับเปลี่ยน',en:'Invent & Transform'}
 };
-let state={recordId:'',templateKey:'teacher-none',committeeIndex:0,committees:[newCommittee('ประธานกรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน')]};
+let state={recordId:'',positionKey:'teacher',rankKey:'teacher-none',templateKey:'teacher:teacher-none',committeeIndex:0,committees:[newCommittee('ประธานกรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน')]};
 
 function newCommittee(role){return{name:'',position:'',committeeRole:role||'กรรมการผู้ประเมิน',note:'',scores:{},itemScores:{},part1:0,part2:0,total:0,complete:false}}
 function boot(){
-  renderRanks(); renderCommitteeTabs(); selectRank('teacher-none');
+  renderPositions(); renderRanks(); renderCommitteeTabs(); selectPosition('teacher'); selectRank('teacher-none');
   google.script.run.withSuccessHandler(d=>{document.getElementById('fiscalYear').value=d.fiscalYear||''}).getBootstrap();
 }
+function renderPositions(){positionNav.innerHTML=Object.entries(POSITIONS).map(function(e){var k=e[0],p=e[1];return '<button class="rankBtn '+(k===state.positionKey?'active':'')+'" data-position="'+k+'" onclick="selectPosition(\''+k+'\')"><b>'+p.label+'</b><small>'+p.form2+'</small></button>';}).join('');}
+function selectPosition(key){state.positionKey=key;state.templateKey=key+':'+state.rankKey;position.value=POSITIONS[key].label;document.querySelectorAll('[data-position]').forEach(function(b){b.classList.toggle('active',b.dataset.position===key)});formCode.textContent=POSITIONS[key].form2+' → '+POSITIONS[key].form3;pa3Code.textContent=POSITIONS[key].form3;renderScores();updateAll();}
+function activePart1(){return state.positionKey==='teacher'?TEACHER_PART1:ADMIN_PART1}
+function activePart2(){return state.positionKey==='teacher'?TEACHER_PART2:ADMIN_PART2}
+function part2Title(){return state.positionKey==='teacher'?'ประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน':'ประเด็นท้าทายในการพัฒนาคุณภาพผู้เรียน ครู และสถานศึกษา'}
 function renderRanks(){
   rankNav.innerHTML=Object.entries(RANKS).map(([k,r])=>`<button class="rankBtn" data-key="${k}" onclick="selectRank('${k}')"><b>${r.full}</b><small>${r.level} · ${r.en}</small></button>`).join('');
 }
 function selectRank(key){
-  state.templateKey=key;document.querySelectorAll('.rankBtn').forEach(b=>b.classList.toggle('active',b.dataset.key===key));
+  state.rankKey=key;state.templateKey=state.positionKey+':'+key;document.querySelectorAll('[data-key]').forEach(b=>b.classList.toggle('active',b.dataset.key===key));
   const r=RANKS[key]; rankBadge.textContent=r.full;academicRank.value=r.label==='ไม่มีวิทยฐานะ'?'':r.label;levelText.textContent='ระดับการปฏิบัติที่คาดหวัง: '+r.level+' ('+r.en+')';
   renderScores(); updateAll();
 }
@@ -161,11 +191,12 @@ function renderScores(){
  let html=`<div class="sectionTitle"><b>ส่วนที่ 1 ข้อตกลงในการพัฒนางานตามมาตรฐานตำแหน่ง</b><b>60 คะแนน</b></div>
  <table class="scoreTable"><thead><tr><th style="width:58%">รายการประเมิน</th><th>ระดับที่คาดหวัง</th><th>ระดับ 1–4</th><th>คะแนน</th></tr></thead><tbody>`;
  let last='';
- PART1.forEach((it,idx)=>{const id='p1-'+it[0];if(last!==it[2]){html+=`<tr><td colspan="4"><b>${it[2]}</b></td></tr>`;last=it[2]}
+ const part1=activePart1();const part2=activePart2();
+ part1.forEach((it,idx)=>{const id='p1-'+it[0];if(last!==it[2]){html+=`<tr><td colspan="4"><b>${it[2]}</b></td></tr>`;last=it[2]}
  html+=rowHtml(id,it[0],it[1],criterionText(),4,c.scores[id],4)});
- html+=`</tbody></table><div class="sectionTitle"><b>ส่วนที่ 2 ประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน</b><b>40 คะแนน</b></div>
+ html+=`</tbody></table><div class="sectionTitle"><b>ส่วนที่ 2 ${part2Title()}</b><b>40 คะแนน</b></div>
  <table class="scoreTable"><thead><tr><th style="width:58%">รายการประเมิน</th><th>รายละเอียด</th><th>ระดับ 1–4</th><th>คะแนน</th></tr></thead><tbody>`;
- PART2.forEach(it=>html+=rowHtml(it[0],it[1],it[2],it[3],it[4],c.scores[it[0]],4));
+ part2.forEach(it=>html+=rowHtml(it[0],it[1],it[2],it[3],it[4],c.scores[it[0]],4));
  html+='</tbody></table>';scoreArea.innerHTML=html;
 }
 function rowHtml(id,code,title,detail,maxScore,rating,ratingMax){
@@ -177,10 +208,11 @@ function rate(id,rating,maxScore,ratingMax){
  const c=state.committees[state.committeeIndex];c.scores[id]=rating;c.itemScores[id]=rating/ratingMax*maxScore;renderScores();updateAll()
 }
 function calculate(c){
- c.part1=PART1.reduce((s,it)=>s+Number(c.itemScores['p1-'+it[0]]||0),0);
- c.part2=PART2.reduce((s,it)=>s+Number(c.itemScores[it[0]]||0),0);
+ const part1=activePart1(),part2=activePart2();
+ c.part1=part1.reduce((s,it)=>s+Number(c.itemScores['p1-'+it[0]]||0),0);
+ c.part2=part2.reduce((s,it)=>s+Number(c.itemScores[it[0]]||0),0);
  c.total=c.part1+c.part2;
- const required=PART1.length+PART2.length;c.complete=Object.keys(c.scores).length===required;
+ const required=part1.length+part2.length;c.complete=Object.keys(c.scores).length===required;
 }
 function updateAll(){
  state.committees.forEach(c=>calculate(c));const c=state.committees[state.committeeIndex];
@@ -224,7 +256,7 @@ function exportPa3Pdf(){
 }
 function resetForm(){
  if(!confirm('เริ่มรายการใหม่และล้างคะแนนบนหน้าจอ?'))return;
- state={recordId:'',templateKey:state.templateKey,committeeIndex:0,committees:[newCommittee('ประธานกรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน')]};
+ state={recordId:'',positionKey:state.positionKey,rankKey:state.rankKey,templateKey:state.positionKey+':'+state.rankKey,committeeIndex:0,committees:[newCommittee('ประธานกรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน')]};
  ['teacherName','school','affiliation','salaryRank','salaryAmount','startDate','endDate','evaluationDate'].forEach(id=>document.getElementById(id).value='');loadCommitteeMeta();renderCommitteeTabs();renderScores();updateAll()
 }
 function showToast(msg){toast.textContent=msg;toast.style.display='block';setTimeout(()=>toast.style.display='none',2800)}

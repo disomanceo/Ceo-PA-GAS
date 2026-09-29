@@ -114,7 +114,8 @@ function exportPa3Pdf(payload) {
     body.setMarginLeft(28);
     body.setMarginRight(28);
 
-    appendTopCode_(body, 'PA 3/ส');
+    const isAdmin = /ผู้อำนวยการ/.test(String(payload.teacher?.position || ''));
+    appendTopCode_(body, isAdmin ? 'PA 3/บส' : 'PA 3/ส');
     appendCentered_(body, 'แบบสรุปผลการประเมินการพัฒนางานตามข้อตกลง (PA)', 12, true);
     appendCentered_(body, 'สำหรับข้าราชการครูและบุคลากรทางการศึกษา', 12, true);
     appendCentered_(body, 'ตำแหน่ง ' + (payload.teacher.position || 'ครู') + academicRankPdf_(payload.teacher.academicRank), 12, true);
@@ -145,7 +146,7 @@ function exportPa3Pdf(payload) {
       ['ส่วนที่ 1 ข้อตกลงในการพัฒนางานตามมาตรฐานตำแหน่ง', '60',
         formatScore_(c[0].part1), formatScore_(c[1].part1), formatScore_(c[2].part1),
         'เกณฑ์ผ่านต้องได้คะแนน\nจากกรรมการแต่ละคน\nไม่ต่ำกว่าร้อยละ 70%'],
-      ['ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน', '40',
+      [(isAdmin ? 'ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาคุณภาพผู้เรียน ครู และสถานศึกษา' : 'ส่วนที่ 2 ข้อตกลงในการพัฒนางานที่เสนอเป็นประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน'), '40',
         formatScore_(c[0].part2), formatScore_(c[1].part2), formatScore_(c[2].part2), ''],
       ['รวม', '100', formatScore_(c[0].total), formatScore_(c[1].total), formatScore_(c[2].total), '']
     ]);
