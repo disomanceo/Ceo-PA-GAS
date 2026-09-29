@@ -24,14 +24,14 @@
     .committeeTabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.committeeTab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-weight:800;cursor:pointer}.committeeTab.active{background:linear-gradient(135deg,#e6b73e,#a66c05);border-color:#a66c05;color:#fff}
     .sectionTitle{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:18px 0 8px;padding:10px 12px;border-radius:10px;background:linear-gradient(90deg,#fff2c6,#fffaf0);border:1px solid #efd895}.sectionTitle b:last-child{white-space:nowrap}
     table{width:100%;border-collapse:collapse}.scoreTable th,.scoreTable td,.pa3Table th,.pa3Table td{border:1px solid #dce3ee;padding:9px;vertical-align:top}.scoreTable th,.pa3Table th{background:#f6f8fc;text-align:center;font-size:.82rem}
-    .criterion{font-size:.76rem;color:var(--muted);line-height:1.45;margin-top:4px}.rating{display:flex;gap:4px;justify-content:center}.rating button{width:34px;height:34px;border-radius:8px;border:1px solid #cfd8e6;background:#fff;cursor:pointer;font-weight:800}.rating button.on{background:linear-gradient(135deg,#f0c54f,#b87908);color:#fff;border-color:#a96b00}
+    .criterion{font-size:.76rem;color:var(--muted);line-height:1.45;margin-top:4px}.rating{display:flex;gap:4px;justify-content:center}.rating button{width:34px;height:34px;border-radius:8px;border:1px solid #cfd8e6;background:#fff;cursor:pointer;font-weight:800}.rating button.on{background:linear-gradient(135deg,#f0c54f,#b87908);color:#fff;border-color:#a96b00}.expectedLevel{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 12px;margin:8px 0;border:1px solid #efd895;border-radius:10px;background:#fff9e7}.expectedLevel b{color:#815500}.evalHead{min-width:92px;width:10%;font-size:.72rem!important;line-height:1.25}.evalHead b{display:block;font-size:1rem;color:#7a5200;margin-bottom:3px}.evalCell{text-align:center;vertical-align:middle!important}.evalCell button{width:38px;height:38px;border-radius:9px;border:1px solid #d5c28d;background:#fff;cursor:pointer;font-weight:900;color:#6b4a0d}.evalCell button.on{background:linear-gradient(135deg,#f0c54f,#b87908);color:#fff;border-color:#a96b00;box-shadow:0 0 0 2px #fff2c6}
     .scoreCell{text-align:center;font-weight:900;white-space:nowrap}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.sumBox{background:#f8fafe;border:1px solid var(--line);padding:12px;border-radius:12px}.sumBox span{display:block;font-size:.78rem;color:var(--muted)}.sumBox b{font-size:1.25rem}
     .resultPass{color:var(--ok)}.resultFail{color:var(--danger)}.status{display:inline-flex;padding:6px 9px;border-radius:999px;background:#fff0bd;color:#795200;font-size:.76rem;font-weight:900;border:1px solid #e6c669}
     .pa3Hero{text-align:center;padding:10px 0 18px}.pa3Hero h2{margin-bottom:4px}.pa3Result{font-size:2rem;font-weight:950}
     .toast{position:fixed;right:18px;bottom:18px;background:#15203a;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:20}
     .empty{padding:20px;text-align:center;color:var(--muted)}
     @media(max-width:980px){.app{grid-template-columns:1fr}aside{position:relative;height:auto}.rankNav{display:flex;gap:8px;overflow:auto}.rankBtn{min-width:190px}.grid{grid-template-columns:1fr 1fr}.topbar{display:block}.actions{margin-top:12px}}
-    @media(max-width:640px){main{padding:12px}.grid,.summary{grid-template-columns:1fr}.card{padding:12px}.scoreTable{font-size:.78rem}.scoreTable th:nth-child(2),.scoreTable td:nth-child(2){display:none}.rating button{width:30px;height:30px}.topbar h1{font-size:1.3rem}}
+    @media(max-width:640px){main{padding:12px}.grid,.summary{grid-template-columns:1fr}.card{padding:12px}#scoreArea{overflow-x:auto}.scoreTable{min-width:900px;font-size:.75rem}.evalHead{min-width:96px}.topbar h1{font-size:1.3rem}}
     @media print{aside,.topbar,.noPrint,.committeeTabs{display:none!important}.app{display:block}main{padding:0}.card{box-shadow:none;border:0;page-break-inside:avoid}}
   </style>
 </head>
@@ -149,13 +149,14 @@ const ADMIN_PART2=[
 ['p2-quant','2.1','ผลลัพธ์ที่คาดหวัง — เชิงปริมาณ','พิจารณาการบรรลุเป้าหมายเชิงปริมาณที่เกิดกับผู้เรียน ครู และสถานศึกษา',10],
 ['p2-qual','2.2','ผลลัพธ์ที่คาดหวัง — เชิงคุณภาพ','พิจารณาการบรรลุเป้าหมายเชิงคุณภาพที่เกิดกับผู้เรียน ครู และสถานศึกษา',10]
 ];
-const POSITIONS={teacher:{label:'ครู',form2:'PA 2/ส',form3:'PA 3/ส'},deputy:{label:'รองผู้อำนวยการสถานศึกษา',form2:'PA 2/บส',form3:'PA 3/บส'},director:{label:'ผู้อำนวยการสถานศึกษา',form2:'PA 2/บส',form3:'PA 3/บส'}};
+const POSITIONS={teacher:{label:'ครู',rankPrefix:'ครู',form2:'PA 2/ส',form3:'PA 3/ส'},deputy:{label:'รองผู้อำนวยการสถานศึกษา',rankPrefix:'รองผู้อำนวยการ',form2:'PA 2/บส',form3:'PA 3/บส'},director:{label:'ผู้อำนวยการสถานศึกษา',rankPrefix:'ผู้อำนวยการ',form2:'PA 2/บส',form3:'PA 3/บส'}};
 const RANKS={
 'teacher-none':{label:'ไม่มีวิทยฐานะ',full:'ครู ไม่มีวิทยฐานะ',level:'ปรับประยุกต์',en:'Apply & Adapt'},
 'teacher-skilled':{label:'ชำนาญการ',full:'ครูชำนาญการ',level:'แก้ไขปัญหา',en:'Solve the Problem'},
 'teacher-senior-skilled':{label:'ชำนาญการพิเศษ',full:'ครูชำนาญการพิเศษ',level:'ริเริ่ม พัฒนา',en:'Originate & Improve'},
 'teacher-expert':{label:'เชี่ยวชาญ',full:'ครูเชี่ยวชาญ',level:'คิดค้น ปรับเปลี่ยน',en:'Invent & Transform'}
 };
+const EVAL_LEVELS={1:'ปฏิบัติได้ต่ำกว่าระดับฯ ที่คาดหวังมาก',2:'ปฏิบัติได้ต่ำกว่าระดับฯ ที่คาดหวัง',3:'ปฏิบัติได้ตามระดับฯ ที่คาดหวัง',4:'ปฏิบัติได้สูงกว่าระดับฯ ที่คาดหวัง'};
 let state={recordId:'',positionKey:'teacher',rankKey:'teacher-none',templateKey:'teacher:teacher-none',committeeIndex:0,committees:[newCommittee('ประธานกรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน'),newCommittee('กรรมการผู้ประเมิน')]};
 
 function newCommittee(role){return{name:'',position:'',committeeRole:role||'กรรมการผู้ประเมิน',note:'',scores:{},itemScores:{},part1:0,part2:0,total:0,complete:false}}
@@ -164,16 +165,17 @@ function boot(){
   google.script.run.withSuccessHandler(d=>{document.getElementById('fiscalYear').value=d.fiscalYear||''}).getBootstrap();
 }
 function renderPositions(){positionNav.innerHTML=Object.entries(POSITIONS).map(function(e){var k=e[0],p=e[1];return '<button class="rankBtn '+(k===state.positionKey?'active':'')+'" data-position="'+k+'" onclick="selectPosition(\''+k+'\')"><b>'+p.label+'</b><small>'+p.form2+'</small></button>';}).join('');}
-function selectPosition(key){state.positionKey=key;state.templateKey=key+':'+state.rankKey;position.value=POSITIONS[key].label;document.querySelectorAll('[data-position]').forEach(function(b){b.classList.toggle('active',b.dataset.position===key)});formCode.textContent=POSITIONS[key].form2+' → '+POSITIONS[key].form3;pa3Code.textContent=POSITIONS[key].form3;scoreFormTitle.textContent='ลงคะแนน '+POSITIONS[key].form2;sideInfo.innerHTML='โครงคะแนน '+POSITIONS[key].form2+'<br>ส่วนที่ 1 = 60 คะแนน<br>ส่วนที่ 2 = 40 คะแนน<br><b>รวม 100 คะแนน</b><br><br>'+POSITIONS[key].form3+' สรุปกรรมการ 3 คนอัตโนมัติ';selectRank(state.rankKey);}
+function selectPosition(key){state.positionKey=key;state.templateKey=key+':'+state.rankKey;position.value=POSITIONS[key].label;document.querySelectorAll('[data-position]').forEach(function(b){b.classList.toggle('active',b.dataset.position===key)});formCode.textContent=POSITIONS[key].form2+' → '+POSITIONS[key].form3;pa3Code.textContent=POSITIONS[key].form3;scoreFormTitle.textContent='ลงคะแนน '+POSITIONS[key].form2;sideInfo.innerHTML='โครงคะแนน '+POSITIONS[key].form2+'<br>ส่วนที่ 1 = 60 คะแนน<br>ส่วนที่ 2 = 40 คะแนน<br><b>รวม 100 คะแนน</b><br><br>'+POSITIONS[key].form3+' สรุปกรรมการ 3 คนอัตโนมัติ';renderRanks();selectRank(state.rankKey);}
 function activePart1(){return state.positionKey==='teacher'?TEACHER_PART1:ADMIN_PART1}
 function activePart2(){return state.positionKey==='teacher'?TEACHER_PART2:ADMIN_PART2}
 function part2Title(){return state.positionKey==='teacher'?'ประเด็นท้าทายในการพัฒนาผลลัพธ์การเรียนรู้ของผู้เรียน':'ประเด็นท้าทายในการพัฒนาคุณภาพผู้เรียน ครู และสถานศึกษา'}
+function rankDisplayName(r){const prefix=POSITIONS[state.positionKey].rankPrefix;return r.label==='ไม่มีวิทยฐานะ'?prefix+' (ไม่มีวิทยฐานะ)':prefix+r.label}
 function renderRanks(){
-  rankNav.innerHTML=Object.entries(RANKS).map(([k,r])=>`<button class="rankBtn" data-key="${k}" onclick="selectRank('${k}')"><b>${r.label}</b><small>${r.level} · ${r.en}</small></button>`).join('');
+  rankNav.innerHTML=Object.entries(RANKS).map(([k,r])=>`<button class="rankBtn" data-key="${k}" onclick="selectRank('${k}')"><b>${rankDisplayName(r)}</b><small>${r.level} · ${r.en}</small></button>`).join('');
 }
 function selectRank(key){
   state.rankKey=key;state.templateKey=state.positionKey+':'+key;document.querySelectorAll('[data-key]').forEach(b=>b.classList.toggle('active',b.dataset.key===key));
-  const r=RANKS[key]; rankBadge.textContent=POSITIONS[state.positionKey].label+' · '+r.label;academicRank.value=r.label==='ไม่มีวิทยฐานะ'?'':r.label;levelText.textContent='ระดับการปฏิบัติที่คาดหวัง: '+r.level+' ('+r.en+')';
+  const r=RANKS[key]; rankBadge.textContent=rankDisplayName(r);academicRank.value=r.label==='ไม่มีวิทยฐานะ'?'':r.label;levelText.textContent='ตำแหน่งและวิทยฐานะ: '+rankDisplayName(r);
   renderScores(); updateAll();
 }
 function renderCommitteeTabs(){
@@ -182,27 +184,27 @@ function renderCommitteeTabs(){
 function selectCommittee(i){syncCommitteeMeta();state.committeeIndex=i;renderCommitteeTabs();committeeStatus.textContent='กรรมการคนที่ '+(i+1);loadCommitteeMeta();renderScores();updateAll()}
 function loadCommitteeMeta(){const c=state.committees[state.committeeIndex];committeeName.value=c.name;committeePosition.value=c.position;committeeRole.value=c.committeeRole||'';committeeNote.value=c.note}
 function syncCommitteeMeta(){const c=state.committees[state.committeeIndex];c.name=committeeName.value;c.position=committeePosition.value;c.committeeRole=committeeRole.value;c.note=committeeNote.value}
-function criterionText(){
- const r=RANKS[state.rankKey];
- return 'ประเมินตามมาตรฐานตำแหน่งและระดับการปฏิบัติที่คาดหวัง: '+r.level;
-}
+function criterionText(){return ''}
+function evaluationHeader(){return `<th style="width:50%">ลักษณะงานที่ปฏิบัติตามมาตรฐานตำแหน่ง</th><th class="evalHead"><b>1</b>ต่ำกว่าระดับฯ<br>ที่คาดหวังมาก</th><th class="evalHead"><b>2</b>ต่ำกว่าระดับฯ<br>ที่คาดหวัง</th><th class="evalHead"><b>3</b>ตามระดับฯ<br>ที่คาดหวัง</th><th class="evalHead"><b>4</b>สูงกว่าระดับฯ<br>ที่คาดหวัง</th><th>คะแนน</th>`}
 function renderScores(){
  const c=state.committees[state.committeeIndex];
- let html=`<div class="sectionTitle"><b>ส่วนที่ 1 ข้อตกลงในการพัฒนางานตามมาตรฐานตำแหน่ง</b><b>60 คะแนน</b></div>
- <table class="scoreTable"><thead><tr><th style="width:58%">รายการประเมิน</th><th>ระดับที่คาดหวัง</th><th>ระดับ 1–4</th><th>คะแนน</th></tr></thead><tbody>`;
+ const r=RANKS[state.rankKey];
+ let html=`<div class="expectedLevel"><span>ระดับการปฏิบัติที่คาดหวัง</span><b>${r.level} (${r.en})</b></div><div class="sectionTitle"><b>ส่วนที่ 1 ข้อตกลงในการพัฒนางานตามมาตรฐานตำแหน่ง</b><b>60 คะแนน</b></div>
+ <table class="scoreTable"><thead><tr>${evaluationHeader()}</tr></thead><tbody>`;
  let last='';
  const part1=activePart1();const part2=activePart2();
- part1.forEach((it,idx)=>{const id='p1-'+it[0];if(last!==it[2]){html+=`<tr><td colspan="4"><b>${it[2]}</b></td></tr>`;last=it[2]}
- html+=rowHtml(id,it[0],it[1],criterionText(),4,c.scores[id],4)});
+ part1.forEach((it,idx)=>{const id='p1-'+it[0];if(last!==it[2]){html+=`<tr><td colspan="6"><b>${it[2]}</b></td></tr>`;last=it[2]}
+ html+=rowHtml(id,it[0],it[1],'',4,c.scores[id],4)});
  html+=`</tbody></table><div class="sectionTitle"><b>ส่วนที่ 2 ${part2Title()}</b><b>40 คะแนน</b></div>
- <table class="scoreTable"><thead><tr><th style="width:58%">รายการประเมิน</th><th>รายละเอียด</th><th>ระดับ 1–4</th><th>คะแนน</th></tr></thead><tbody>`;
+ <table class="scoreTable"><thead><tr>${evaluationHeader()}</tr></thead><tbody>`;
  part2.forEach(it=>html+=rowHtml(it[0],it[1],it[2],it[3],it[4],c.scores[it[0]],4));
  html+='</tbody></table>';scoreArea.innerHTML=html;
 }
 function rowHtml(id,code,title,detail,maxScore,rating,ratingMax){
- const buttons=[1,2,3,4].map(n=>`<button class="${Number(rating)===n?'on':''}" onclick="rate('${id}',${n},${maxScore},${ratingMax})">${n}</button>`).join('');
+ const detailHtml=detail?`<div class="criterion">${detail}</div>`:'';
+ const choices=[1,2,3,4].map(n=>`<td class="evalCell"><button type="button" title="${EVAL_LEVELS[n]}" aria-label="${n} ${EVAL_LEVELS[n]}" class="${Number(rating)===n?'on':''}" onclick="rate('${id}',${n},${maxScore},${ratingMax})">${n}</button></td>`).join('');
  const score=rating?(rating/ratingMax*maxScore):0;
- return `<tr><td><b>${code} ${title}</b><div class="criterion">${detail}</div></td><td><span class="muted">${RANKS[state.rankKey].level}</span></td><td><div class="rating">${buttons}</div></td><td class="scoreCell">${fmtScore(score)} / ${maxScore}</td></tr>`;
+ return `<tr><td><b>${code} ${title}</b>${detailHtml}</td>${choices}<td class="scoreCell">${fmtScore(score)} / ${maxScore}</td></tr>`;
 }
 function rate(id,rating,maxScore,ratingMax){
  const c=state.committees[state.committeeIndex];c.scores[id]=rating;c.itemScores[id]=rating/ratingMax*maxScore;renderScores();updateAll()
